@@ -46,9 +46,10 @@ window.KK = window.KK || {};
   function show(name) {
     screen = name;
     ['menu', 'create', 'city', 'fight'].forEach((s) => { $('#' + s).hidden = s !== name; });
-    $('#stage').hidden = !(name === 'menu' || name === 'fight');
+    $('#stage').hidden = name !== 'fight';
     $('#hud').hidden = name !== 'fight';
     $('#chips').hidden = !(name === 'city' || name === 'fight');
+    document.querySelector('.topbar').hidden = name === 'menu';
     chips();
     window.scrollTo(0, 0);
   }
@@ -72,17 +73,49 @@ window.KK = window.KK || {};
   }
 
   /* ---------- menü ---------- */
-  let newArmed = false;
   function goMenu() {
     KK.endFight();
+    KK.stopDemo();
     show('menu');
     const s = load();
-    $('#contBtn').hidden = !s;
-    if (s) $('#contInfo').textContent = `${s.name}, seviye ${s.lvl}`;
-    newArmed = false;
-    $('#newBtn').textContent = 'Yeni Oyun';
-    $('#newBtn').classList.remove('danger');
-    KK.showDemo();
+    $('#contBtn').disabled = !s;
+    $('#contInfo').textContent = s ? `Kayıtlı oyun: ${s.name}, seviye ${s.lvl}` : '';
+  }
+
+  /* ---------- bilgi ve onay penceresi ---------- */
+  function dialog(title, body, buttons) {
+    $('#dTitle').textContent = title;
+    const b = $('#dBody'); b.innerHTML = '';
+    b.append(...body);
+    const row = $('#dBtns'); row.innerHTML = '';
+    const close = () => { $('#dialog').hidden = true; };
+    buttons.forEach((o) => row.append(h('button', { class: 'btn' + (o.cls ? ' ' + o.cls : ''), type: 'button', onclick: () => { close(); if (o.onclick) o.onclick(); } }, o.label)));
+    $('#dialog').hidden = false;
+    row.lastChild.focus();
+  }
+  const HOW = [
+    ['Amaç', 'Arenalarda dövüş, altın ve tecrübe kazan. Her arenanın şampiyonunu yenince sonraki arena açılır.'],
+    ['Hareket', 'Saldırmak için rakibe bitişik olmalısın. İlerle (D) ve Geri Çekil (A) ile mesafeyi ayarla.'],
+    ['Saldırılar', 'Hızlı (Q) az enerji harcar ve sık isabet eder. Normal (W) dengelidir. Güçlü (E) çok vurur ama sık ıskalar.'],
+    ['Savunma ve enerji', 'Kalkanın ve zırhın darbeleri kendiliğinden karşılar. Her saldırı enerji harcar; Dinlen (S) ile enerji toplarsın.'],
+    ['Seyirci', 'Alay Et (R), güçlü ve kritik vuruşlar seyirciyi coşturur. Coşkulu seyirci daha çok altın getirir.'],
+    ['İksirler', 'Can (1) ve Enerji (2) iksiri bir tur harcar. Bir dövüşte en fazla 2 iksir içebilirsin.'],
+    ['Şehir', 'Maçlar arasında Mağaza’dan eşya al, Ekipman’dan kuşan, Karakter’den puan dağıt. Eğitim Alanı’nda isteğe bağlı dövüşler yapabilirsin.'],
+  ];
+  function howTo() {
+    dialog('Nasıl Oynanır', HOW.map(([t, d]) => h('div', null, h('h3', null, t), h('p', null, d))), [{ label: 'Tamam' }]);
+  }
+  function settings() {
+    const btn = h('button', { class: 'btn ghost', type: 'button', 'aria-pressed': String(KK.soundOn) }, KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı');
+    btn.onclick = () => { toggleSound(); btn.textContent = KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı'; btn.setAttribute('aria-pressed', String(KK.soundOn)); };
+    dialog('Ayarlar', [h('div', { class: 'row' }, btn)], [{ label: 'Kapat' }]);
+  }
+  function toggleSound() {
+    KK.soundOn = !KK.soundOn;
+    try { localStorage.setItem('kilic-ve-kalkan-ses', KK.soundOn ? '1' : '0'); } catch (e) { /* yok */ }
+    $('#soundBtn').textContent = KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı';
+    $('#soundBtn').setAttribute('aria-pressed', String(KK.soundOn));
+    if (KK.soundOn) KK.audio();
   }
 
   /* ---------- karakter oluşturma ---------- */
@@ -491,17 +524,18 @@ window.KK = window.KK || {};
   }
 
   /* ---------- olaylar ---------- */
+  const startNew = () => { resetCreate(); show('create'); renderCreate(); };
   $('#newBtn').onclick = () => {
     KK.audio();
-    if (load() && !newArmed) {
-      newArmed = true;
-      $('#newBtn').textContent = 'Eski kayıt silinecek. Emin misin?';
-      $('#newBtn').classList.add('danger');
+    if (load()) {
+      dialog('Yeni oyun', [h('p', null, 'Kayıtlı oyunun silinecek. Emin misin?')],
+        [{ label: 'Vazgeç', cls: 'ghost' }, { label: 'Yeni oyuna başla', cls: 'danger', onclick: startNew }]);
       return;
     }
-    KK.stopDemo();
-    resetCreate(); show('create'); renderCreate();
+    startNew();
   };
+  $('#howBtn').onclick = howTo;
+  $('#setBtn').onclick = settings;
   $('#contBtn').onclick = () => {
     KK.audio();
     const s = load(); if (!s) return;
@@ -517,14 +551,10 @@ window.KK = window.KK || {};
   };
   $$('#cityTabs .tab').forEach((b) => { b.onclick = () => { tab = b.dataset.tab; renderCity(); }; });
   $$('#actions .act').forEach((b) => { b.onclick = () => { KK.audio(); KK.playerAct(b.dataset.act); }; });
-  $('#soundBtn').onclick = () => {
-    KK.soundOn = !KK.soundOn;
-    $('#soundBtn').textContent = KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı';
-    $('#soundBtn').setAttribute('aria-pressed', String(KK.soundOn));
-    if (KK.soundOn) KK.audio();
-  };
+  $('#soundBtn').onclick = toggleSound;
   const KEYS = { KeyA: 'back', ArrowLeft: 'back', KeyD: 'fwd', ArrowRight: 'fwd', KeyQ: 'quick', KeyW: 'normal', KeyE: 'power', KeyR: 'taunt', KeyS: 'rest', Digit1: 'pot_can', Digit2: 'pot_enerji' };
   document.addEventListener('keydown', (ev) => {
+    if (ev.code === 'Escape' && !$('#dialog').hidden) { $('#dialog').hidden = true; return; }
     if (screen !== 'fight' || !$('#modal').hidden || KK.sceneActive()) return;
     if (ev.target && ev.target.tagName === 'INPUT') return;
     const id = KEYS[ev.code];
@@ -532,6 +562,7 @@ window.KK = window.KK || {};
   });
 
   /* ---------- başlangıç ---------- */
+  try { if (localStorage.getItem('kilic-ve-kalkan-ses') === '0') toggleSound(); } catch (e) { /* yok */ }
   KK.loadSprites();
   KK.startRender();
   goMenu();

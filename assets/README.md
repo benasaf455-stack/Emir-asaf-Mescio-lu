@@ -55,6 +55,12 @@ Her karakter kendi klasörüne girer: `assets/sprites/<klasör>/idle.png` gibi.
 | `a1m6` | Yaşlı Kurt Varro: yaşlı, yara izli, tecrübeli savaşçı |
 | `a1m7` | Demir Duvar Tiberius: 1. Arena şampiyonu, dev kalkanlı |
 
+## Arayüz görselleri
+
+| Dosya | Nerede |
+| --- | --- |
+| `arayuz/giris.webp` | Giriş ekranı (1672×941). Üzerindeki dört buton oyunda tıklanır alanlardır; butonların yeri değişirse `css/style.css` içindeki `.hot` ayarı ve `index.html` içindeki `top` değerleri güncellenmeli. |
+
 ## Sahne görselleri
 
 - **Boyut:** 320×180 piksel (16:9).

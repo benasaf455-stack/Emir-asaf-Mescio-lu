@@ -44,16 +44,16 @@
     <canvas id="arena" width="384" height="216" aria-label="Arena"></canvas>
   </div>
 
-  <!-- ana menü -->
+  <!-- ana menü: görselin üzerindeki butonlar tıklanır alanlardır -->
   <section id="menu" class="screen">
-    <p class="eyebrow">Aurelia İmparatorluğu · Vesperum</p>
-    <h1 class="title">Kılıç ve Kalkan</h1>
-    <p class="lede">Seni büyüten adam seni imparatorluğa teslim etti. Artık bir köle ve bir gladyatörsün. Arenada hayatta kal, güçlen ve bütün bunların nedenini öğren.</p>
-    <div class="row">
-      <button class="btn" id="newBtn" type="button">Yeni Oyun</button>
-      <button class="btn ghost" id="contBtn" type="button" hidden>Devam Et · <span id="contInfo"></span></button>
+    <div class="title-screen">
+      <img class="title-img" src="assets/arayuz/giris.webp" width="1672" height="941" alt="Kılıç ve Kalkan: sancaklar ve meşalelerle çevrili arena kapısı">
+      <button class="hot" id="newBtn" type="button" style="top:34.5%">Yeni Oyun</button>
+      <button class="hot" id="contBtn" type="button" style="top:46.5%">Devam Et</button>
+      <button class="hot" id="howBtn" type="button" style="top:58.5%">Nasıl Oynanır</button>
+      <button class="hot" id="setBtn" type="button" style="top:70.5%">Ayarlar</button>
     </div>
-    <p class="note">İskelet sürüm: karakter oluşturma, açılış sahnesi, eğitim, şehir menüsü ve 1. Arena oynanabilir. Görseller yer tutucudur.</p>
+    <p class="note" id="contInfo"></p>
   </section>
 
   <!-- karakter oluşturma -->
@@ -133,6 +133,15 @@
       <button class="btn ghost small" id="sceneSkip" type="button">Sahneyi Geç</button>
       <button class="btn" id="sceneNext" type="button">İleri</button>
     </div>
+  </div>
+</div>
+
+<!-- bilgi ve onay penceresi -->
+<div class="modal" id="dialog" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="dTitle">
+    <h2 id="dTitle"></h2>
+    <div id="dBody" class="dbody"></div>
+    <div class="row" id="dBtns"></div>
   </div>
 </div>
 

@@ -36,7 +36,7 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 - Hamleler: İlerle, Geri Çekil, Hızlı / Normal / Güçlü Saldırı, Alay Et, Dinlen, İksir, Ruh Hançeri.
 - **Otomatik savunma:** Kalkanın blok şansı, zırh ve Savunma özelliği kendiliğinden devreye girer.
 - **Enerji:** Saldırılar enerji harcar, Dinlen enerji toplar.
-- **İksirler:** Can İksiri ve Enerji İksiri. İçmek bir tur harcar, dövüş başına en fazla 2 iksir kullanılır.
+- **İksirler:** 10 çeşit (aşağıda, Mağaza bölümünde). İçmek bir tur harcar, dövüş başına en fazla 2 iksir kullanılır.
 - **Ruh Hançeri:** Silah yuvasına girmez, 3. Arena'daki gizli buluşmadan sonra özel hamle olarak açılır. Yalnızca ruh aşamalarında işe yarar; bedeni olmayan bir ruha zarar verebilen tek silahtır.
 - **Rakip tarzları:** Normal rakipler aynı rakibin daha fazla canlı kopyası değildir. Her tarz farklı bir taktik ister:
 
@@ -70,7 +70,20 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 | Dengeli | Orta koruma |
 | Ağır | Yüksek koruma, enerji cezası |
 
-- **İksirler:** Can İksiri, Enerji İksiri.
+- **İksirler:** 10 çeşit. Görseller `assets/gelen/iksirler.webp` içinde aynı sırayla durur (üst sıra soldan sağa 1–5, alt sıra 6–10). Sayılar ilk öneridir, oynarken ayarlanabilir.
+
+| # | İksir | Etkisi | Sayılar (öneri) | Açıldığı arena |
+| --- | --- | --- | --- | --- |
+| 1 | Can İksiri | Kullanıldığında can yeniler. | Canın %35'i | 1 |
+| 2 | Enerji İksiri | Kullanıldığında enerji yeniler. | Enerjinin %50'si | 1 |
+| 3 | Gladyatör Kanı | Birkaç tur saldırı gücünü artırır. | 3 tur, hasar +%30 | 2 |
+| 4 | Demir Deri | Birkaç tur alınan hasarı azaltır. | 3 tur, alınan hasar −%30 | 2 |
+| 5 | Kan Emici İksir | Birkaç tur verilen hasarın bir kısmını cana dönüştürür. | 3 tur, verilen hasarın %40'ı | 3 |
+| 6 | Ölümsüzlük İksiri | Ölümcül bir darbeyi bir kez engeller. | O dövüşte bir kez, 1 canla kalırsın | 5 |
+| 7 | Dev Kanı | Birkaç tur maksimum canı ve savunmayı artırır. | 4 tur, en yüksek can +%25, Savunma +5 | 4 |
+| 8 | Vahşi Kan | Sonraki saldırıyı iki kez vurdurur; daha fazla enerji harcar. | Sonraki saldırı 2 kez vurur, enerjisi 2 katı | 3 |
+| 9 | Zırh Kıran İksir | Sonraki saldırının düşman savunmasının büyük kısmını yok saymasını sağlar. | Zırh ve Savunmanın %75'i yok sayılır | 2 |
+| 10 | Muhafız İksiri | Belirli miktarda hasarı emen geçici bir kalkan verir. | 25 + seviye × 3 hasar emer | 4 |
 
 ## Maç sıralaması
 

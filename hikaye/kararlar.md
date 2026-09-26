@@ -6,6 +6,7 @@
 - Oyunun adı: **Kılıç ve Kalkan**.
 - Ana karakterin adını oyuncu belirler.
 - Demircinin adı **Tullus**, kızının adı **Livia**.
+- İmparatorluğun adı **Aurelia**, arenaların bulunduğu başkentin adı **Vesperum**.
 - Açılışta yalnızca ana karakterin gördükleri anlatılır: bulanık idam anısı, demircinin ihaneti, zincirler, köle pazarı. Geçmiş (felaket, sözleşme, Draven, baskın) oyun ilerledikçe parça parça açılır.
 
 ## Kurallar

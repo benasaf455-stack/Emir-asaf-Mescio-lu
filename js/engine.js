@@ -4,6 +4,7 @@ window.KK = window.KK || {};
   'use strict';
 
   const W = 384, H = 216, GROUND = 190, SLOTS = 10;
+  const RES = 4; // tuval, ayrıntılı sprite'lar net görünsün diye 4 kat çözünürlükte çizilir
   const slotX = (i) => 40 + i * 34;
   const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
   const lerp = (a, b, t) => a + (b - a) * t;
@@ -59,8 +60,8 @@ window.KK = window.KK || {};
 
   /* ---------- sahne ---------- */
   const cv = document.getElementById('arena');
+  cv.width = W * RES; cv.height = H * RES;
   const ctx = cv.getContext('2d');
-  ctx.imageSmoothingEnabled = false;
   const S = { fighters: [], texts: [], parts: [], excite: 0, shake: 0, top: null, dark: 0 };
   KK.scene = S;
 
@@ -149,11 +150,12 @@ window.KK = window.KK || {};
   function render(now) {
     const t = now / 1000;
     if (!BG) buildBg();
-    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.setTransform(RES, 0, 0, RES, 0, 0);
+    ctx.imageSmoothingEnabled = false;
     ctx.save();
     if (S.shake > 0.4 && !reduced) ctx.translate(Math.round((rnd() - 0.5) * S.shake), Math.round((rnd() - 0.5) * S.shake));
     S.shake *= 0.85;
-    ctx.drawImage(BG, 0, 0);
+    ctx.drawImage(BG, 0, 0, W, H);
     S.excite *= 0.985;
     for (const p of CROWD) {
       const b = Math.round(Math.max(0, Math.sin(now / 110 + p.ph)) * S.excite * 2 * p.amp);

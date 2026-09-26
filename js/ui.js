@@ -63,13 +63,14 @@ window.KK = window.KK || {};
 
   function drawPortrait(canvas, f, facing, spriteKey) {
     const c = canvas.getContext('2d');
+    c.setTransform(4, 0, 0, 4, 0, 0);
     c.imageSmoothingEnabled = false;
-    c.setTransform(1, 0, 0, 1, 0, 0);
     c.fillStyle = '#1a110d'; c.fillRect(0, 0, 80, 80);
     c.fillStyle = '#2a1c17'; c.fillRect(0, 60, 80, 20);
     c.fillStyle = '#c49a62'; c.fillRect(0, 68, 80, 12);
     c.fillStyle = '#8f6a42'; c.fillRect(0, 68, 80, 1);
-    KK.drawFighter(c, f, 40 - facing * 2, 74, facing, KK.idleR(), 0, spriteKey);
+    c.translate(40 - facing * 2, 75); c.scale(1.35, 1.35);
+    KK.drawFighter(c, f, 0, 0, facing, KK.idleR(), 0, spriteKey);
   }
 
   /* ---------- menü ---------- */
@@ -187,7 +188,7 @@ window.KK = window.KK || {};
   }
 
   function foeCard(foe, opts) {
-    const cv = h('canvas', { class: 'portrait', width: 80, height: 80, 'aria-label': foe.name });
+    const cv = h('canvas', { class: 'portrait', width: 320, height: 320, 'aria-label': foe.name });
     const st = KK.STYLES[foe.style];
     const d = KK.derive(foe);
     const kv = h('div', { class: 'kv' });
@@ -317,7 +318,7 @@ window.KK = window.KK || {};
   }
 
   function renderEquip(body) {
-    const cv = h('canvas', { class: 'portrait', width: 80, height: 80, 'aria-label': 'Gladyatörün' });
+    const cv = h('canvas', { class: 'portrait', width: 320, height: 320, 'aria-label': 'Gladyatörün' });
     setTimeout(() => drawPortrait(cv, playerFighter(), 1, 'oyuncu'), 0);
     const d = KK.derive(playerFighter());
     const slots = h('div', null);
@@ -340,7 +341,7 @@ window.KK = window.KK || {};
   }
 
   function renderHero(body) {
-    const cv = h('canvas', { class: 'portrait', width: 80, height: 80, 'aria-label': 'Gladyatörün' });
+    const cv = h('canvas', { class: 'portrait', width: 320, height: 320, 'aria-label': 'Gladyatörün' });
     setTimeout(() => drawPortrait(cv, playerFighter(), 1, 'oyuncu'), 0);
     const d = KK.derive(playerFighter());
     const stats = h('div', { class: 'stats' });
@@ -563,6 +564,10 @@ window.KK = window.KK || {};
 
   /* ---------- başlangıç ---------- */
   try { if (localStorage.getItem('kilic-ve-kalkan-ses') === '0') toggleSound(); } catch (e) { /* yok */ }
+  KK.onSpriteLoad = () => {
+    if (screen === 'create') renderCreate();
+    if (screen === 'city') renderCity();
+  };
   KK.loadSprites();
   KK.startRender();
   goMenu();

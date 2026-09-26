@@ -18,34 +18,62 @@ window.KK = window.KK || {};
        },
      },
      fw/fh: bir karenin genişliği ve yüksekliği. foot: karenin altından ayaklara kadar boş piksel.
+     scale: kaynak pikselin arenada kaç birim çizileceği (arena 384×216 birimdir; karakter ~48 birim boyunda olmalı).
+     smooth: küçültürken yumuşatma (ayrıntılı, büyük kaynak görseller için).
+     Tek kareli bir sprite'a nefes alma, saldırıda öne eğilme, darbe alınca yanıp sönme ve düşme hareketleri kodla verilir.
      Anahtarlar: 'oyuncu', tarz adları (dengeli, savunmaci, hancerci, tokmakci, okcu)
      ve özel rakipler için maç kimliği (ör. 'a1m7'). Yalnızca idle zorunludur. */
-  KK.SPRITE_DEFS = {};
+  KK.SPRITE_DEFS = {
+    oyuncu: {
+      fw: 144, fh: 240, foot: 9, scale: 0.22, smooth: true,
+      anims: { idle: { src: 'assets/sprites/oyuncu/idle.png', frames: 1, fps: 1 } },
+    },
+  };
 
   const images = {};
   KK.loadSprites = () => {
     Object.entries(KK.SPRITE_DEFS).forEach(([key, def]) => {
       Object.entries(def.anims).forEach(([anim, a]) => {
         const img = new Image();
-        img.onload = () => { images[key + '/' + anim] = img; };
+        img.onload = () => { images[key + '/' + anim] = img; if (KK.onSpriteLoad) KK.onSpriteLoad(key); };
         img.src = a.src;
       });
     });
   };
 
-  /* Sprite varsa çizer ve true döner. anim: idle | walk | attack | hurt | death */
-  KK.drawSprite = (ctx, key, anim, time, x, y, facing) => {
+  /* Sprite varsa çizer ve true döner. anim: idle | walk | attack | hurt | death
+     r: dövüşçünün poz bilgisi (tek kareli sprite'lara hareket vermek için) */
+  KK.drawSprite = (ctx, key, anim, time, x, y, facing, r) => {
     const def = KK.SPRITE_DEFS[key];
     if (!def) return false;
     if (!images[key + '/' + anim]) anim = 'idle';
     const img = images[key + '/' + anim], a = def.anims[anim];
     if (!img || !a) return false;
+    r = r || {};
     let fr = Math.floor(time * a.fps);
     fr = anim === 'death' ? Math.min(a.frames - 1, fr) : fr % a.frames;
+    const sc = def.scale || 1, dw = def.fw * sc, dh = def.fh * sc, foot = (def.foot || 0) * sc;
     ctx.save();
-    ctx.translate(Math.round(x), Math.round(y));
-    ctx.scale(facing, 1);
-    ctx.drawImage(img, fr * def.fw, 0, def.fw, def.fh, -def.fw / 2, -def.fh + (def.foot || 0), def.fw, def.fh);
+    ctx.translate(x, y);
+    ctx.fillStyle = 'rgba(40,20,8,.45)';
+    ctx.beginPath(); ctx.ellipse(0, 0.5, dw * 0.34 + (r.fall || 0) * dw * 0.4, 2.2, 0, 0, Math.PI * 2); ctx.fill();
+    if (r.fall > 0) { ctx.translate(-facing * r.fall * 6, 0); ctx.rotate(-facing * r.fall * 1.45); }
+    if (a.frames === 1) {
+      let lean = 0;
+      if (r.strike > 0) {
+        lean = r.strike < 0.4 ? -0.1 * (r.strike / 0.4) : -0.1 + 0.26 * ((r.strike - 0.4) / 0.6);
+        if (r.recover > 0) lean *= 1 - r.recover;
+      }
+      if (r.taunt > 0) lean = -0.08 * r.taunt;
+      ctx.rotate(facing * lean);
+      if (r.walk > 0) ctx.translate(0, -Math.abs(Math.sin(r.walk)) * 1.5);
+      if (!r.fall) ctx.scale(1, 1 + Math.sin(time * 2.2 + (r.x || 0)) * 0.012);
+    }
+    if (!def.noFlip) ctx.scale(facing, 1);
+    if (r.hurt > 0.3 && Math.floor(time * 20) % 2 === 0) ctx.globalAlpha = 0.35;
+    ctx.imageSmoothingEnabled = !!def.smooth;
+    if (def.smooth) ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(img, fr * def.fw, 0, def.fw, def.fh, -dw / 2, -dh + foot, dw, dh);
     ctx.restore();
     return true;
   };
@@ -92,7 +120,7 @@ window.KK = window.KK || {};
       else if (r.hurt > 0.4) anim = 'hurt';
       else if (r.strike > 0) anim = 'attack';
       else if (r.walk > 0) anim = 'walk';
-      if (KK.drawSprite(ctx, spriteKey, anim, r.animT != null ? r.animT : time, x - facing * r.kb, y - r.hop, facing)) return;
+      if (KK.drawSprite(ctx, spriteKey, anim, time, x - facing * r.kb, y - r.hop, facing, r)) return;
     }
     const L = f.look, e = f.equip;
     const skin = r.hurt > 0.3 ? '#e0584a' : L.skin;

@@ -7,3 +7,4 @@ Tarayıcıda oynanacak, arena dövüşü, karakter gelişimi ve ekipman üzerine
 - [Hikâye](hikaye/hikaye.md): oyunun başlangıcına kadar olan hikâye
 - [Hikâye kararları](hikaye/kararlar.md): hikâyedeki açık noktalar için verilen kararlar
 - [Oynanış akışı](hikaye/oynanis-akisi.md): eğitim, 5 arena ve final; 41 maçlık sıralama ve hikâye sahneleri
+- [Tasarım](hikaye/tasarim.md): görünüm, sahneler, cihazlar ve ses

@@ -11,7 +11,7 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 - **Kilit:** Bir arenanın şampiyonu yenilmeden sonraki arena açılmaz.
 - **Ödül:** Her maç altın ve tecrübe verir. Seviye atlayınca oyuncu puanlarını kendisi dağıtır.
 - **Yenilgi:** İlerleme silinmez. Oyuncu hazırlanıp aynı maçı tekrar dener. Hikâye sahnesi yalnızca kazanınca açılır.
-  - **(öneri)** Hikâyedeki sebep: Görevliler dövüşü son anda durdurur, çünkü Cassian onu canlı istiyor.
+  - Hikâyedeki sebep: Görevliler dövüşü son anda durdurur, çünkü Cassian onu canlı istiyor.
 - **Ek dövüşler:** Eğitim Alanı'nda isteğe bağlı dövüşler yapılabilir. Hikâyeyi bitirmek için tekrar tekrar dövüşmek gerekmez; ödüller zorunlu maçlarla yetecek şekilde ayarlanır.
 - **Rakipler:** Normal rakipler aynı rakibin daha fazla canlı kopyası değildir. Her tarz farklı bir taktik ister:
 
@@ -60,7 +60,7 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 | Maç | Rakip |
 | --- | --- |
 | 1–5 | Normal rakipler |
-| 6 | **Demircinin kızı** (maskeli). Maçtan sonra **Sahne 5: Gizli buluşma.** Kız tehdidi, Draven'ı ve hainlik suçlamasının nedenini anlatır, Ruh Hançeri'ni verir. **Sahne 6: Hançer Anısı I.** İdam anısı netleşir. |
+| 6 | **Livia** (maskeli). Dövüş belli bir can seviyesinde durur, maskesi düşer. Maçtan sonra **Sahne 5: Gizli buluşma.** Livia tehdidi, Draven'ı ve hainlik suçlamasının nedenini anlatır, Ruh Hançeri'ni verir. **Sahne 6: Hançer Anısı I.** İdam anısı netleşir. |
 | 7 | **Gizli ruh karşılaşması.** Önce beden, sonra bedenden çıkan ruh; ruha yalnızca Ruh Hançeri zarar verir. |
 | 8 | **Şampiyon:** ağır tokmaklı şampiyon |
 

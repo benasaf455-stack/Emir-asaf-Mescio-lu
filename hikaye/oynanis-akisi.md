@@ -1,100 +1,97 @@
 # Kılıç ve Kalkan: Oynanış Akışı
 
-Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hikâye kısa sahnelerle açılır. Bir sahne en fazla birkaç ekran sürer ve atlanabilir.
+Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hikâye yalnızca önemli karşılaşmalarda, kısa ve atlanabilir sahnelerle ilerler.
+
+> **(öneri)** ile işaretli maddeler henüz onaylanmadı.
 
 ## Temel kurallar
 
-- **Ludus (gladyatör okulu) menüsü** oyunun merkezidir. Ana karakter köle olduğu için "şehir" yerine burada yaşar.
-  - **Arena:** sıradaki maç
-  - **Tüccar:** silah, kalkan, miğfer, zırh ve iksir
-  - **Eğitim Alanı:** eğitmenle idman dövüşü; kaybetme yok, altın yok, az tecrübe. Eğitim dersleri buradan tekrar izlenebilir.
-  - **Karakter:** özellik puanı dağıtma
-- Oyuncu maçlar arasında istediği kadar Tüccar, Eğitim ve Karakter ekranlarına gidebilir. Bir sonraki maça ancak "Dövüşe Çık" dediğinde girilir.
-- **Hikâye sahneleri** maç kazanılıp sonuç ekranı kapandıktan sonra, Ludus'a dönmeden önce oynar. Her sahne bir kez oynar. Sonra oyuncu Ludus'a döner, aksi yazmıyorsa.
-- **Hikâye maçları** Arena ekranında işaretlidir. Oyuncu hazırlanıp istediği zaman girer.
-- **Kaybetme:** Oyuncu ölmez, arena görevlileri dövüşü son anda durdurur (neden durdurduklarını oyuncu ileride öğrenir). Az altın ve tecrübe alır, aynı maçı tekrar dener. Hikâye sahnesi yalnızca kazanınca açılır.
-- **Arenalar:** 6 arena, her birinde 4 maç. 4. maç arena şampiyonudur.
-- **İksirler:** Dövüşte hamle olarak kullanılır ve bir tur harcatır. Can İksiri ve Enerji İksiri vardır, dövüş başına en fazla 2 iksir kullanılır.
+- **Yapı:** 1 eğitim maçı, 5 arena ve 1 final. Toplam **41 zorunlu karşılaşma** var.
+- **Şehir menüsü** oyunun merkezidir: Arena, Mağaza, Ekipman, Karakter (puan dağıtma) ve Eğitim Alanı. Oyuncu maçlar arasında buraya istediği kadar döner.
+- **Kilit:** Bir arenanın şampiyonu yenilmeden sonraki arena açılmaz.
+- **Ödül:** Her maç altın ve tecrübe verir. Seviye atlayınca oyuncu puanlarını kendisi dağıtır.
+- **Yenilgi:** İlerleme silinmez. Oyuncu hazırlanıp aynı maçı tekrar dener. Hikâye sahnesi yalnızca kazanınca açılır.
+  - **(öneri)** Hikâyedeki sebep: Görevliler dövüşü son anda durdurur, çünkü Cassian onu canlı istiyor.
+- **Ek dövüşler:** Eğitim Alanı'nda isteğe bağlı dövüşler yapılabilir. Hikâyeyi bitirmek için tekrar tekrar dövüşmek gerekmez; ödüller zorunlu maçlarla yetecek şekilde ayarlanır.
+- **Rakipler:** Normal rakipler aynı rakibin daha fazla canlı kopyası değildir. Her tarz farklı bir taktik ister:
 
-## Bölümler
-
-### Bölüm 0: Karakter Oluşturma
-- Erkek gladyatöre isim verilir, küçük görünüş ayrıntıları (ten, saç, sakal, yara izi) seçilir, özellik puanları dağıtılır.
-- **Sonra:** Sahne 1.
-
-### Sahne 1: İhanet (açılış)
-- Bulanık bir anı: kalabalık, uzaktan bakan bir adam, kalkan balta, sert bir ses.
-- Bugün: Demirci "malzeme almaya gidiyoruz" der. Askerler bekler. "Neden?" sorusu cevapsız kalır. Zincirlenir. Demircinin kızıyla son bakış.
-- Köle pazarı, satış, arenaya getiriliş.
-- **Sonra:** Eğitim Dövüşü.
-
-### Bölüm 1: Eğitim Dövüşü
-- Ludus eğitmeniyle adım adım öğretilir:
-  1. İlerle / Geri Çekil (mesafe)
-  2. Hızlı, Normal ve Güçlü saldırı
-  3. Otomatik savunma (kalkan bloğu, zırh)
-  4. Enerji
-  5. Dinlen
-- Kaybedilemez.
-- **Sonra:** eğitmenin kısa sözü ("Burada yaşamak için kazanırsın."), ardından Ludus menüsü ilk kez açılır.
-
-### Bölüm 2: Arena I, Çırak Arenası (maç 1–4)
-- Rakipler: kaba, acemi dövüşçüler.
-- Maç 4: arena şampiyonu.
-- **Sahne 2, Maç 4'ten sonra: "Locadaki adam."** Kısa bir an: imparator locasının gölgesinde biri onu izler ve bir görevliye "Bu o." der.
-- **Sonra:** Ludus.
-
-### Bölüm 3: Arena II, Liman Arenası (maç 5–8) — İlk şüpheler
-- Rakipler: çevik, hızlı dövüşçüler.
-- **Maç 6: ayarlanmış eşleşme.** Beklenenden birkaç seviye güçlü bir rakip çıkar.
-- **Sahne 3, Maç 6'dan sonra: "Kazanmaması gerekiyordu."** Oyuncu iki görevlinin fısıldaştığını duyar.
-- Maç 8: arena şampiyonu.
-- **Sahne 4, Maç 8'den sonra: "Gece taşınan cesetler."** Ölen bir gladyatörün cesedi gizli bir kapıdan götürülür. Kapalı miğferli bir savaşçı hiç ses çıkarmadan yürür.
-- **Sonra:** Ludus.
-
-### Bölüm 4: Arena III, Bronz Arena (maç 9–12) — Maskeli savaşçı
-- Rakipler: ağır zırhlı, savunmacı dövüşçüler.
-- **Maç 12 (arena şampiyonu): Maskeli savaşçı.** Hızlı ve çevik bir rakip. Dövüş belli bir can seviyesinde kesilir, maskesi düşer: demircinin kızı.
-- **Sahne 5, Maç 12'den sonra: "Gizli buluşma."** Kız, demircinin tehdit edildiğini, gerçek babasının Draven olduğunu ve Draven'ın neden hain ilan edildiğini anlatır. Ruh Hançeri'ni verir ve gider.
-- **Sahne 6, hemen ardından: "Hançer Anısı I."** Oyuncu hançeri ilk kez tutar. Bulanık idam anısı netleşir: uzaktan bakan adam babasıdır.
-- **Sonra:** Ludus. Ruh Hançeri artık kalıcı bir ekipmandır ve dövüşte özel hamle olarak açılır.
-
-### Bölüm 5: Arena IV, Gümüş Arena (maç 13–16) — Ruhların ortaya çıkışı
-- Rakipler: şovmenler ve ilk ele geçirilmiş bedenler.
-- **Maç 14: ilk ele geçirilmiş beden.** İki aşamalı dövüş:
-  1. Beden: normal dövüş.
-  2. Ruh: Bedenden çıkan ruha yalnızca Ruh Hançeri zarar verir.
-- **Sahne 7, Maç 14'ten sonra: "Hançer Anısı II."** Draven arenadaki ritüeli ve Valerius ile iblisin görüşmesini görür. Oyuncu arena ölümleriyle sözleşme arasındaki bağı öğrenir.
-- Maç 16: arena şampiyonu.
-- **Sonra:** Ludus.
-
-### Bölüm 6: Arena V, Altın Arena (maç 17–20) — Zirveye yükseliş
-- Rakipler: karışık tarzlar, daha sık ele geçirilmiş bedenler.
-- **Sahne 8, Maç 18'den sonra: "Hançer Anısı III."** Saray baskını, Valerius'a giren ruh, Draven'ın ölümcül darbesi, kaçan ruh.
-- Maç 20: arena şampiyonu.
-- **Sahne 9, Maç 20'den sonra: "İlan."** İmparator Cassian'ın arenaya bizzat ineceği duyurulur.
-- **Sonra:** Ludus.
-
-### Bölüm 7: Arena VI, İmparator Kolezyumu (maç 21–24) — Final
-- Maç 21–23: imparatorluk muhafızları (seçkin rakipler).
-- **Maç 24: Cassian.** Maçtan önce kısa bir giriş sahnesi var, sonra üç aşama:
-  1. **Cassian:** Seyirci Cassian'ı destekler, seyirci göstergesi oyuncunun aleyhine işler.
-  2. **Yaratık Cassian:** Ruhlar Cassian'ın bedeninde toplanır, seyirciler kaçar, arena kararır.
-  3. **Kaçan ruh:** Cassian ölünce ruh kaçmaya çalışır. Oyuncu Ruh Hançeri ile son darbeyi vurur.
-- **Sahne 10, Maç 24'ten sonra: "Özgürlük."** Karanlık bağ kopar, ana karakter özgürdür. Sözleşmenin izleri ve annenin sırrı açık kalır.
-- **Sonra:** jenerik, ardından Ludus. İsteyen oyuncu serbest "Efsaneler Arenası" dövüşlerine devam edebilir.
-
-## Özet tablo
-
-| Ne zaman | Sahne | Sonra |
+| Tarz | Nasıl dövüşür | Oyuncudan ne ister |
 | --- | --- | --- |
-| Karakter oluşturma sonrası | 1. İhanet | Eğitim dövüşü |
-| Eğitim dövüşü sonrası | Eğitmenin sözü | Ludus |
-| Maç 4 | 2. Locadaki adam | Ludus |
-| Maç 6 | 3. Kazanmaması gerekiyordu | Ludus |
-| Maç 8 | 4. Gece taşınan cesetler | Ludus |
-| Maç 12 (maskeli savaşçı) | 5. Gizli buluşma → 6. Hançer Anısı I | Ludus (hançer açılır) |
-| Maç 14 (ilk ele geçirilmiş) | 7. Hançer Anısı II | Ludus |
-| Maç 18 | 8. Hançer Anısı III | Ludus |
-| Maç 20 | 9. İlan | Ludus |
-| Maç 24 (Cassian) | 10. Özgürlük | Jenerik → Ludus |
+| Kalkanlı savunmacı | Sık bloklar, dinlenip bekler | Güçlü saldırı, sabır |
+| Çevik hançerci | Turda iki hızlı vuruş, sık kaçar | İsabet, hızlı saldırı |
+| Tokmakçı | Yavaş ama çok ağır vurur, enerjisi çabuk biter | Mesafe, geri çekilip bekleme |
+| Okçu | Uzaktan vurur, yaklaşınca geri kaçar | Hızla yaklaşma |
+
+- **Mağaza:**
+  - Silahlar.
+  - Üç ekipman serisi (zırh, miğfer, kalkan), her biri kademe kademe gelişir.
+    - **(öneri)** Hafif seri: çeviklik bonusu.
+    - **(öneri)** Dengeli seri.
+    - **(öneri)** Ağır seri: yüksek savunma, enerji cezası.
+  - İksirler.
+
+## Maç sıralaması
+
+### Karakter oluşturma → Sahne 1: İhanet
+- Oyuncu erkek gladyatöre isim verir, küçük görünüş ayrıntılarını seçer ve puan dağıtır.
+- **Sahne 1:** Bulanık idam anısı, demircinin ihaneti ("Neden?"), kızla son bakış, köle pazarı, arenaya getiriliş.
+- **Sonra:** Eğitim.
+
+### Eğitim (1 maç)
+- Rakip: tahta silahlı bir rakip.
+- Öğretilenler: hareket, saldırı türleri, otomatik savunma, enerji ve Dinlen.
+- **Sonra:** Şehir menüsü ilk kez açılır.
+
+### 1. Arena (7 maç)
+| Maç | Rakip |
+| --- | --- |
+| 1–5 | Normal rakipler |
+| — | **Sahne 2: İzleniyor.** Locadaki biri onu işaret eder: "Bu o." |
+| 6 | Tecrübeli savaşçı. **(öneri)** Bu maç ayarlanmış maç olsun: rakip beklenenden çok güçlü. Maçtan sonra **Sahne 3: "Kazanmaması gerekiyordu."** |
+| 7 | **Şampiyon:** kalkanlı şampiyon |
+
+### 2. Arena (9 maç)
+| Maç | Rakip |
+| --- | --- |
+| 1–8 | Normal rakipler, farklı savaş tarzları |
+| 9 | **Şampiyon:** çift hançerli, çevik şampiyon. **(öneri)** Maçtan sonra **Sahne 4: Gece taşınan cesetler**; kapalı miğferli, ses çıkarmayan bir savaşçı görülür. |
+
+### 3. Arena (8 maç)
+| Maç | Rakip |
+| --- | --- |
+| 1–5 | Normal rakipler |
+| 6 | **Demircinin kızı** (maskeli). Maçtan sonra **Sahne 5: Gizli buluşma.** Kız tehdidi, Draven'ı ve hainlik suçlamasının nedenini anlatır, Ruh Hançeri'ni verir. **Sahne 6: Hançer Anısı I.** İdam anısı netleşir. |
+| 7 | **Gizli ruh karşılaşması.** Önce beden, sonra bedenden çıkan ruh; ruha yalnızca Ruh Hançeri zarar verir. |
+| 8 | **Şampiyon:** ağır tokmaklı şampiyon |
+
+### 4. Arena (7 maç)
+| Maç | Rakip |
+| --- | --- |
+| 1–6 | Normal rakipler |
+| 7 | **Şampiyon:** yay ustası. **(öneri)** Maçtan sonra **Sahne 7: Hançer Anısı II.** Draven arenadaki ritüeli, Valerius ile iblisin görüşmesini görür. |
+
+### 5. Arena (8 maç)
+| Maç | Rakip |
+| --- | --- |
+| 1–7 | Normal rakipler |
+| 8 | **Şampiyon:** imparatorun kılıç ustası. **(öneri)** Maçtan sonra **Sahne 8: Hançer Anısı III** (baskın gecesi, kaçan ruh) ve **Sahne 9: İlan** (Cassian arenaya iniyor). |
+
+### Final (1 maç)
+- **Aşama 1:** İnsan hâlindeki Cassian, kalabalık arenada. Seyirci Cassian'ı destekler.
+- **Aşama 2:** Ruhların dönüştürdüğü yaratık Cassian. Seyirciler kaçar, arena kararır.
+  - **(öneri)** Aşama 2'nin sonunda Cassian ölür, ruh kaçmaya çalışır ve oyuncu Ruh Hançeri ile son darbeyi vurur. Bu ayrı bir aşama değil, bir bitirme hamlesidir.
+- **Sahne 10: Özgürlük.** Sözleşmenin izleri ve annenin sırrı açık kalır.
+- **Sonra:** Jenerik, ardından şehir menüsü. İsteyen oyuncu ek dövüşlere devam eder.
+
+## Sayım
+
+| Bölüm | Maç |
+| --- | --- |
+| Eğitim | 1 |
+| 1. Arena | 7 |
+| 2. Arena | 9 |
+| 3. Arena | 8 |
+| 4. Arena | 7 |
+| 5. Arena | 8 |
+| Final | 1 |
+| **Toplam** | **41** |

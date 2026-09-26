@@ -46,7 +46,7 @@ Her karakter kendi klasörüne girer: `assets/sprites/<klasör>/idle.png` gibi.
 
 | Klasör | Karakter |
 | --- | --- |
-| `oyuncu` | Ana karakter. **Eklendi:** `oyuncu/idle.png` (144×240, önden görünüm, tek kare). Orijinali `oyuncu/orijinal.png`. |
+| `oyuncu` | Ana karakter (yeni tasarım). **Eklendi:** `oyuncu/idle.png` (136×228, önden görünüm, tek kare, şeffaf). Orijinali `oyuncu/orijinal.png`. |
 | `dengeli` | Kılıçlı, orta zırhlı gladyatör |
 | `savunmaci` | Büyük kalkanlı, ağır zırhlı gladyatör |
 | `hancerci` | Hafif zırhlı, çevik hançerci |

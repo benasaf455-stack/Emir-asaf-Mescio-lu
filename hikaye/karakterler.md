@@ -1,5 +1,25 @@
 # Karakterler
 
+## Piksel referansı
+
+Bütün karakterler ana karakterin piksel yoğunluğuna uymalı: karakter gerçek çözünürlükte yaklaşık 110 piksel boyunda, az renkli, temiz ve kesintisiz koyu kenar çizgili. ChatGPT'ye önce tasarım ürettirilir, sonra aynı sohbette "piksele dönüştür" istemiyle bu yoğunluğa getirilir (Livia'da işe yaradı).
+
+## Ana karakter — onaylandı (yeni tasarım)
+
+- **Görsel:** `assets/gelen/ana-karakter-v2.png` (oyunda `assets/sprites/oyuncu/idle.png`). Eski tasarım `assets/gelen/ana-karakter.png` artık kullanılmıyor.
+- Adını oyuncu verir. Görünüş seçeneği yok.
+
+## Tullus — kabul edildi
+
+- **Görsel:** `assets/gelen/karakterler/tullus.webp`
+- Demirci, 50'li yaşlarda; iri yapılı, kırlaşmış saç ve sakal, suçluluk dolu bakış, yanık lekeli deri önlük, elinde çekiç.
+- Piksel yoğunluğu ana karakterden ince (~145 piksel, ~110 renk). Yalnızca hikâye sahnelerinde göründüğü için şimdilik kabul edildi.
+
+## Livia — onaylandı
+
+- **Görsel:** `assets/gelen/karakterler/livia-v3.webp` (solda maskesiz, sağda maskeli; şeffaf arka plan). Önceki denemeler `livia.webp` ve `livia-v2.webp`.
+- 22 yaşında, Tullus'un kızı; ince ve çevik, örgülü kahve saç, hafif deri zırh, iki elinde hançer. Maskeli hâlinde yarıklı demir maske ve başlık yüzünü ve saçını tamamen gizler.
+
 ## Yaşlı Kurt Varro (1. Arena, 6. maç) — onaylandı
 
 - **Görsel:** `assets/gelen/rakipler/yasli-kurt-varro.webp`

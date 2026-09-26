@@ -25,7 +25,7 @@ window.KK = window.KK || {};
      ve özel rakipler için maç kimliği (ör. 'a1m7'). Yalnızca idle zorunludur. */
   KK.SPRITE_DEFS = {
     oyuncu: {
-      fw: 144, fh: 240, foot: 9, scale: 0.22, smooth: true,
+      fw: 136, fh: 228, foot: 4, scale: 0.22, smooth: true,
       anims: { idle: { src: 'assets/sprites/oyuncu/idle.png', frames: 1, fps: 1 } },
     },
   };

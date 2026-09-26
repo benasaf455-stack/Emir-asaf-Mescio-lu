@@ -60,6 +60,8 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 | Mızrak | 2 adım uzaktan vurabilir |
 | Yay | Oyuncu da kullanabilir; uzaktan vurur ama yakında zayıftır |
 
+- **Kademeler:** Her silah türünün **10 kademesi** var. Her arenada her türden 2 yeni silah açılır (1. Arena: 1–2. kademe, 5. Arena: 9–10. kademe). Sıradan silahlar (tahta, pas, demir) ilk arenalarda, parlayan büyülü silahlar son arenalarda açılır. Görseller her tür için soldan sağa, üst sıradan alt sıraya kademe sırasıyla kullanılır.
+
 - **Üç ekipman serisi** (zırh, miğfer, kalkan), her biri kademe kademe gelişir:
 
 | Seri | Özelliği |

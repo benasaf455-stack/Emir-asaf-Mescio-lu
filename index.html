@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Kılıç ve Kalkan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div class="app">
+  <header class="topbar">
+    <div class="brand">Kılıç ve Kalkan</div>
+    <div class="chips" id="chips" hidden>
+      <span class="chip"><b id="cName"></b></span>
+      <span class="chip">Sv. <b id="cLvl"></b></span>
+      <span class="chip">TP <b id="cXp"></b></span>
+      <span class="chip gold"><b id="cGold"></b> altın</span>
+    </div>
+    <button class="btn ghost small" id="soundBtn" type="button" aria-pressed="true">Ses: Açık</button>
+  </header>
+
+  <div class="hud" id="hud" hidden>
+    <div class="fbox">
+      <div class="who" id="pWho"></div>
+      <div class="bar hp"><i id="pHp"></i><span id="pHpT"></span></div>
+      <div class="bar en"><i id="pEn"></i><span id="pEnT"></span></div>
+    </div>
+    <div class="crowd">
+      <div class="label">Seyirci</div>
+      <div class="meter" id="crowdMeter"></div>
+      <div class="dist" id="distT"></div>
+    </div>
+    <div class="fbox right">
+      <div class="who" id="eWho"></div>
+      <div class="bar hp"><i id="eHp"></i><span id="eHpT"></span></div>
+      <div class="bar en"><i id="eEn"></i><span id="eEnT"></span></div>
+    </div>
+  </div>
+
+  <div class="stage" id="stage">
+    <canvas id="arena" width="384" height="216" aria-label="Arena"></canvas>
+  </div>
+
+  <!-- ana menü -->
+  <section id="menu" class="screen">
+    <p class="eyebrow">Aurelia İmparatorluğu · Vesperum</p>
+    <h1 class="title">Kılıç ve Kalkan</h1>
+    <p class="lede">Seni büyüten adam seni imparatorluğa teslim etti. Artık bir köle ve bir gladyatörsün. Arenada hayatta kal, güçlen ve bütün bunların nedenini öğren.</p>
+    <div class="row">
+      <button class="btn" id="newBtn" type="button">Yeni Oyun</button>
+      <button class="btn ghost" id="contBtn" type="button" hidden>Devam Et · <span id="contInfo"></span></button>
+    </div>
+    <p class="note">İskelet sürüm: karakter oluşturma, açılış sahnesi, eğitim, şehir menüsü ve 1. Arena oynanabilir. Görseller yer tutucudur.</p>
+  </section>
+
+  <!-- karakter oluşturma -->
+  <section id="create" class="screen" hidden>
+    <h2>Gladyatörünü oluştur</h2>
+    <div class="two">
+      <div class="panel">
+        <canvas class="portrait" id="createPortrait" width="80" height="80" aria-label="Önizleme"></canvas>
+        <div class="field">
+          <label class="label" for="nameIn">Adın</label>
+          <input type="text" id="nameIn" maxlength="16" value="Aren" autocomplete="off">
+        </div>
+        <div class="field"><span class="label">Ten</span><div class="swatches" id="swSkin"></div></div>
+        <div class="field"><span class="label">Saç</span><div class="swatches" id="swHair"></div></div>
+        <div class="field"><span class="label">Sakal</span><div class="seg" id="segBeard"></div></div>
+        <div class="field"><span class="label">Yara izi</span><div class="seg" id="segScar"></div></div>
+      </div>
+      <div class="panel">
+        <div class="row between">
+          <span class="label">Özellik puanları</span>
+          <span><b class="pts" id="createPts"></b> <span class="note">puan kaldı</span></span>
+        </div>
+        <div class="stats" id="createStats"></div>
+        <div class="row">
+          <button class="btn" id="startBtn" type="button">Başla</button>
+          <button class="btn ghost" id="backMenuBtn" type="button">Geri</button>
+        </div>
+        <p class="note" id="createNote"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- şehir menüsü -->
+  <section id="city" class="screen" hidden>
+    <nav class="tabs" role="tablist" id="cityTabs">
+      <button class="tab" type="button" role="tab" data-tab="arena">Arena</button>
+      <button class="tab" type="button" role="tab" data-tab="magaza">Mağaza</button>
+      <button class="tab" type="button" role="tab" data-tab="ekipman">Ekipman</button>
+      <button class="tab" type="button" role="tab" data-tab="karakter">Karakter <span id="ptsBadge" class="badge" hidden></span></button>
+      <button class="tab" type="button" role="tab" data-tab="egitim">Eğitim Alanı</button>
+    </nav>
+    <div id="cityBody"></div>
+  </section>
+
+  <!-- dövüş -->
+  <section id="fight" class="screen" hidden>
+    <div class="tutbox" id="tutBox" hidden></div>
+    <div class="row between">
+      <span class="turn" id="turnT"></span>
+      <span class="note keys">Tuşlar: A D Q W E R S · 1 2 iksir</span>
+    </div>
+    <div class="actions" id="actions">
+      <button class="act" data-act="back" type="button"><span class="an">Geri Çekil</span><span class="as"><span>1 adım</span><kbd>A</kbd></span></button>
+      <button class="act" data-act="fwd" type="button"><span class="an">İlerle</span><span class="as"><span>2 adıma kadar</span><kbd>D</kbd></span></button>
+      <button class="act atk" data-act="quick" type="button"><span class="an">Hızlı Saldırı</span><span class="as"><span data-info></span><kbd>Q</kbd></span></button>
+      <button class="act atk" data-act="normal" type="button"><span class="an">Normal Saldırı</span><span class="as"><span data-info></span><kbd>W</kbd></span></button>
+      <button class="act atk" data-act="power" type="button"><span class="an">Güçlü Saldırı</span><span class="as"><span data-info></span><kbd>E</kbd></span></button>
+      <button class="act" data-act="taunt" type="button"><span class="an">Alay Et</span><span class="as"><span data-info></span><kbd>R</kbd></span></button>
+      <button class="act" data-act="rest" type="button"><span class="an">Dinlen</span><span class="as"><span data-info></span><kbd>S</kbd></span></button>
+      <button class="act pot" data-act="pot_can" type="button"><span class="an">Can İksiri</span><span class="as"><span data-info></span><kbd>1</kbd></span></button>
+      <button class="act pot" data-act="pot_enerji" type="button"><span class="an">Enerji İksiri</span><span class="as"><span data-info></span><kbd>2</kbd></span></button>
+    </div>
+    <ul class="log" id="log" aria-live="polite"></ul>
+  </section>
+</div>
+
+<!-- hikâye sahnesi -->
+<div class="scene" id="scene" hidden>
+  <div class="scene-card" role="dialog" aria-modal="true" aria-labelledby="sceneTitle">
+    <div class="row between"><span class="label" id="sceneTitle"></span><span class="note" id="sceneCount"></span></div>
+    <canvas id="sceneCanvas" width="320" height="180"></canvas>
+    <div class="scene-text">
+      <b id="sceneSpeaker"></b>
+      <p id="sceneText"></p>
+    </div>
+    <div class="row between">
+      <button class="btn ghost small" id="sceneSkip" type="button">Sahneyi Geç</button>
+      <button class="btn" id="sceneNext" type="button">İleri</button>
+    </div>
+  </div>
+</div>
+
+<!-- sonuç penceresi -->
+<div class="modal" id="modal" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <h2 id="mTitle"></h2>
+    <div id="mBody"></div>
+    <button class="btn" id="mBtn" type="button">Devam</button>
+  </div>
+</div>
+
+<script src="js/data.js"></script>
+<script src="js/sprites.js"></script>
+<script src="js/engine.js"></script>
+<script src="js/scenes.js"></script>
+<script src="js/ui.js"></script>
+</body>
+</html>

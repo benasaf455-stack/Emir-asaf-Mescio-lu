@@ -23,11 +23,22 @@ window.KK = window.KK || {};
      Tek kareli bir sprite'a nefes alma, saldırıda öne eğilme, darbe alınca yanıp sönme ve düşme hareketleri kodla verilir.
      Anahtarlar: 'oyuncu', tarz adları (dengeli, savunmaci, hancerci, tokmakci, okcu)
      ve özel rakipler için maç kimliği (ör. 'a1m7'). Yalnızca idle zorunludur. */
+  const one = (key, w, h) => ({
+    fw: w, fh: h, foot: 4, scale: 0.22, smooth: true,
+    anims: { idle: { src: `assets/sprites/${key}/idle.png`, frames: 1, fps: 1 } },
+  });
   KK.SPRITE_DEFS = {
-    oyuncu: {
-      fw: 136, fh: 228, foot: 4, scale: 0.22, smooth: true,
-      anims: { idle: { src: 'assets/sprites/oyuncu/idle.png', frames: 1, fps: 1 } },
-    },
+    oyuncu: one('oyuncu', 136, 228),
+    rakip1: one('rakip1', 103, 200),
+    rakip2: one('rakip2', 139, 228),
+    rakip3: one('rakip3', 129, 191),
+    rakip4: one('rakip4', 115, 223),
+    rakip5: one('rakip5', 131, 204),
+    varro: one('varro', 147, 230),
+    tiberius: one('tiberius', 187, 246),
+    tullus: one('tullus', 137, 230),
+    livia: one('livia', 147, 212),
+    livia_maske: one('livia_maske', 149, 211),
   };
 
   const images = {};
@@ -40,6 +51,8 @@ window.KK = window.KK || {};
       });
     });
   };
+
+  KK.spriteImage = (key) => images[key + '/idle'] || null;
 
   /* Sprite varsa çizer ve true döner. anim: idle | walk | attack | hurt | death
      r: dövüşçünün poz bilgisi (tek kareli sprite'lara hareket vermek için) */
@@ -125,7 +138,7 @@ window.KK = window.KK || {};
     const L = f.look, e = f.equip;
     const skin = r.hurt > 0.3 ? '#e0584a' : L.skin;
     const tunic = L.tunic || KK.PLAYER_TUNIC;
-    const armor = KK.item(e.zirh), helm = KK.item(e.migfer), shield = KK.item(e.kalkan), weapon = KK.item(e.silah) || KK.item('kilic_0');
+    const armor = KK.item(e.zirh), helm = KK.item(e.migfer), shield = KK.item(e.kalkan), weapon = KK.item(e.silah) || KK.item('kilic_1');
 
     ctx.save();
     ctx.translate(Math.round(x - facing * r.kb), Math.round(y - r.hop));
@@ -196,7 +209,7 @@ window.KK = window.KK || {};
     }
     const shx = -2, shy = -27, hx = shx + Math.sin(a) * 9, hy = shy + Math.cos(a) * 9;
     pline(ctx, shx, shy, hx, hy, skin, 2);
-    const wl = { kilic: 12, hancer: 7, tokmak: 11, yay: 8 }[weapon.type];
+    const wl = { kilic: 12, hancer: 7, tokmak: 11, balta: 11, mizrak: 16, yay: 8 }[weapon.type] || 10;
     const wc = weapon.tier === 0 && weapon.type !== 'hancer' ? METAL[0] : METAL[Math.min(5, weapon.tier + 2)];
     const ex = hx + Math.cos(w) * wl, ey = hy + Math.sin(w) * wl;
     pline(ctx, hx - Math.cos(w) * 2, hy - Math.sin(w) * 2, hx, hy, '#4a2e1a', 1);

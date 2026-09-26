@@ -27,6 +27,7 @@
       <div class="who" id="pWho"></div>
       <div class="bar hp"><i id="pHp"></i><span id="pHpT"></span></div>
       <div class="bar en"><i id="pEn"></i><span id="pEnT"></span></div>
+      <div class="buffs" id="pBuffs"></div>
     </div>
     <div class="crowd">
       <div class="label">Seyirci</div>
@@ -66,10 +67,6 @@
           <label class="label" for="nameIn">Adın</label>
           <input type="text" id="nameIn" maxlength="16" value="Aren" autocomplete="off">
         </div>
-        <div class="field"><span class="label">Ten</span><div class="swatches" id="swSkin"></div></div>
-        <div class="field"><span class="label">Saç</span><div class="swatches" id="swHair"></div></div>
-        <div class="field"><span class="label">Sakal</span><div class="seg" id="segBeard"></div></div>
-        <div class="field"><span class="label">Yara izi</span><div class="seg" id="segScar"></div></div>
       </div>
       <div class="panel">
         <div class="row between">
@@ -86,16 +83,34 @@
     </div>
   </section>
 
-  <!-- şehir menüsü -->
+  <!-- şehir menüsü: görselin üzerindeki binalar, butonlar ve sol üst panel tıklanır -->
   <section id="city" class="screen" hidden>
-    <nav class="tabs" role="tablist" id="cityTabs">
-      <button class="tab" type="button" role="tab" data-tab="arena">Arena</button>
-      <button class="tab" type="button" role="tab" data-tab="magaza">Mağaza</button>
-      <button class="tab" type="button" role="tab" data-tab="ekipman">Ekipman</button>
-      <button class="tab" type="button" role="tab" data-tab="karakter">Karakter <span id="ptsBadge" class="badge" hidden></span></button>
-      <button class="tab" type="button" role="tab" data-tab="egitim">Eğitim Alanı</button>
-    </nav>
-    <div id="cityBody"></div>
+    <div class="city-screen" id="cityScreen">
+      <img class="city-img" src="assets/arayuz/sehir.webp" width="1672" height="941" alt="Vesperum: ortada arena, solda demirci ve eğitim alanı, sağda zırhçı ve iksirci">
+      <button class="spot" data-go="demirci" type="button" style="left:0;top:26.6%;width:20.3%;height:54.2%">Demirci</button>
+      <button class="spot" data-go="arena" type="button" style="left:26.3%;top:11.7%;width:47.2%;height:57.4%">Arena</button>
+      <button class="spot" data-go="egitim" type="button" style="left:22.1%;top:44.6%;width:16.7%;height:34%">Eğitim Alanı</button>
+      <button class="spot" data-go="zirhci" type="button" style="left:61.6%;top:42.5%;width:20.9%;height:39.3%">Zırhçı</button>
+      <button class="spot" data-go="iksirci" type="button" style="left:83.1%;top:38.3%;width:16.9%;height:43.6%">İksirci</button>
+      <button class="cbtn" data-go="demirci" type="button" style="left:3.41%;width:16.5%">Demirci</button>
+      <button class="cbtn" data-go="egitim" type="button" style="left:22.97%;width:15.97%">Eğitim Alanı</button>
+      <button class="cbtn" data-go="arena" type="button" style="left:41.51%;width:16.93%">Arena</button>
+      <button class="cbtn" data-go="zirhci" type="button" style="left:61.12%;width:15.91%">Zırhçı</button>
+      <button class="cbtn" data-go="iksirci" type="button" style="left:80.02%;width:16.87%">İksirci</button>
+      <button class="medal" data-go="karakter" type="button" aria-label="Karakter"><canvas id="medalCanvas" width="160" height="160"></canvas></button>
+      <span class="pts-dot" id="ptsDot" hidden></span>
+      <div class="hudbar hb1" id="hbName"></div>
+      <div class="hudbar hb2"><i id="hbXpFill"></i><span id="hbXp"></span></div>
+      <div class="hudbar hb3" id="hbGold"></div>
+      <div class="city-title" id="cityTitle">Vesperum</div>
+    </div>
+    <div class="row between">
+      <span class="note">Bir binaya ya da alttaki butonlara dokun. Karakterin için sol üstteki madalyona dokun.</span>
+      <span class="row">
+        <button class="btn ghost small" id="citySound" type="button">Ses: Açık</button>
+        <button class="btn ghost small" id="cityMenu" type="button">Ana Menü</button>
+      </span>
+    </div>
   </section>
 
   <!-- dövüş -->
@@ -103,7 +118,7 @@
     <div class="tutbox" id="tutBox" hidden></div>
     <div class="row between">
       <span class="turn" id="turnT"></span>
-      <span class="note keys">Tuşlar: A D Q W E R S · 1 2 iksir</span>
+      <span class="note keys">Tuşlar: A D Q W E R S · 1 iksir</span>
     </div>
     <div class="actions" id="actions">
       <button class="act" data-act="back" type="button"><span class="an">Geri Çekil</span><span class="as"><span>1 adım</span><kbd>A</kbd></span></button>
@@ -113,9 +128,9 @@
       <button class="act atk" data-act="power" type="button"><span class="an">Güçlü Saldırı</span><span class="as"><span data-info></span><kbd>E</kbd></span></button>
       <button class="act" data-act="taunt" type="button"><span class="an">Alay Et</span><span class="as"><span data-info></span><kbd>R</kbd></span></button>
       <button class="act" data-act="rest" type="button"><span class="an">Dinlen</span><span class="as"><span data-info></span><kbd>S</kbd></span></button>
-      <button class="act pot" data-act="pot_can" type="button"><span class="an">Can İksiri</span><span class="as"><span data-info></span><kbd>1</kbd></span></button>
-      <button class="act pot" data-act="pot_enerji" type="button"><span class="an">Enerji İksiri</span><span class="as"><span data-info></span><kbd>2</kbd></span></button>
+      <button class="act pot" data-act="potions" type="button"><span class="an">İksir</span><span class="as"><span data-info></span><kbd>1</kbd></span></button>
     </div>
+    <div class="pot-tray" id="potTray" hidden></div>
     <ul class="log" id="log" aria-live="polite"></ul>
   </section>
 </div>
@@ -124,7 +139,7 @@
 <div class="scene" id="scene" hidden>
   <div class="scene-card" role="dialog" aria-modal="true" aria-labelledby="sceneTitle">
     <div class="row between"><span class="label" id="sceneTitle"></span><span class="note" id="sceneCount"></span></div>
-    <canvas id="sceneCanvas" width="320" height="180"></canvas>
+    <canvas id="sceneCanvas" width="640" height="360"></canvas>
     <div class="scene-text">
       <b id="sceneSpeaker"></b>
       <p id="sceneText"></p>
@@ -133,6 +148,18 @@
       <button class="btn ghost small" id="sceneSkip" type="button">Sahneyi Geç</button>
       <button class="btn" id="sceneNext" type="button">İleri</button>
     </div>
+  </div>
+</div>
+
+<!-- şehir pencereleri -->
+<div class="win-wrap" id="win" hidden>
+  <div class="win" role="dialog" aria-modal="true" aria-labelledby="winTitle">
+    <div class="win-head">
+      <h2 id="winTitle"></h2>
+      <span class="win-gold" id="winGold"></span>
+      <button class="btn ghost small" id="winClose" type="button">Kapat</button>
+    </div>
+    <div class="win-body" id="winBody"></div>
   </div>
 </div>
 

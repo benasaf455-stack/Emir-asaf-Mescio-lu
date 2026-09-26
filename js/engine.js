@@ -65,71 +65,16 @@ window.KK = window.KK || {};
   const S = { fighters: [], texts: [], parts: [], excite: 0, shake: 0, top: null, dark: 0 };
   KK.scene = S;
 
-  let BG = null, CROWD = [];
-  function buildBg() {
-    const c = document.createElement('canvas'); c.width = W; c.height = H;
-    const x = c.getContext('2d');
-    const r = KK.seeded('arena-bg');
-    const band = (y, h, col) => { x.fillStyle = col; x.fillRect(0, y, W, h); };
-    band(0, 5, '#2b1a33'); band(5, 4, '#5a2a3a'); band(9, 4, '#8c3f38'); band(13, 3, '#b35f3a');
-    // gölgelik
-    for (let i = 0; i < W; i += 24) {
-      x.fillStyle = (i / 24) % 2 ? '#cdb58a' : '#8e2620';
-      for (let k = 0; k < 10; k++) x.fillRect(i + k, k, 24 - 2 * k, 1);
-    }
-    // tribün
-    band(16, 96, '#5a4331');
-    for (let row = 0; row < 6; row++) {
-      const y = 22 + row * 15;
-      band(y + 11, 2, '#35271c'); band(y + 13, 1, '#6e5440');
-    }
-    // imparator locası
-    x.fillStyle = '#20140f'; x.fillRect(170, 30, 44, 30);
-    x.fillStyle = '#4d2652'; x.fillRect(166, 58, 52, 8);
-    x.fillStyle = '#e0b54d'; x.fillRect(166, 57, 52, 1); x.fillRect(166, 65, 52, 1);
-    for (let i = 0; i < 6; i++) { x.fillStyle = i % 2 ? '#3d1e42' : '#5e3064'; x.fillRect(168 + i * 8, 66, 7, 5); }
-    x.fillStyle = '#4d2652'; x.fillRect(188, 44, 8, 13);
-    x.fillStyle = '#d9a577'; x.fillRect(189, 38, 6, 6);
-    x.fillStyle = '#56662c'; x.fillRect(188, 37, 8, 2);
-    x.fillStyle = '#8a8272'; x.fillRect(176, 47, 5, 10); x.fillRect(203, 47, 5, 10);
-    x.fillStyle = '#b27a4f'; x.fillRect(177, 42, 4, 4); x.fillRect(204, 42, 4, 4);
-    // duvar
-    band(112, 22, '#7a5c41'); band(112, 2, '#b89a73'); band(132, 2, '#4a3727');
-    for (let i = 0; i < 12; i++) {
-      const gx = 6 + i * 32;
-      if (i === 0 || i === 11) {
-        x.fillStyle = '#140d09'; x.fillRect(gx, 118, 18, 16); x.fillRect(gx + 2, 116, 14, 2);
-        x.fillStyle = '#35271c'; for (let b = 2; b < 18; b += 4) x.fillRect(gx + b, 116, 1, 18);
-      } else if (i % 2) {
-        x.fillStyle = '#8e2620'; x.fillRect(gx + 4, 114, 12, 14); x.fillRect(gx + 6, 128, 8, 2);
-        x.fillStyle = '#e0b54d'; x.fillRect(gx + 4, 114, 12, 1); x.fillRect(gx + 9, 119, 2, 2);
-      } else {
-        x.fillStyle = 'rgba(0,0,0,.2)'; x.fillRect(gx + 2, 117, 16, 13);
-      }
-    }
-    // kum
-    band(134, 82, '#c49a62');
-    band(134, 3, '#8f6a42');
-    for (let i = 0; i < 900; i++) {
-      x.fillStyle = r() < 0.5 ? '#a98150' : '#d8b27a';
-      x.fillRect(Math.floor(r() * W), 137 + Math.floor(r() * (H - 137)), 1, 1);
-    }
-    for (let i = 0; i < 10; i++) {
-      x.fillStyle = '#b48c58';
-      x.fillRect(Math.floor(r() * 300), 150 + i * 6, 40 + Math.floor(r() * 60), 1);
-    }
-    BG = c;
-    CROWD = [];
-    const cols = ['#8e2620', '#2c4f69', '#56662c', '#a88443', '#d8cdb4', '#4d2652', '#6d4a2c'];
-    for (let row = 0; row < 6; row++) {
-      const y = 28 + row * 15;
-      for (let cx = 2 + (row % 2) * 3; cx < W - 2; cx += 6) {
-        if (cx > 164 && cx < 220 && y < 74) continue;
-        if (r() < 0.12) continue;
-        CROWD.push({ x: cx, y, body: cols[Math.floor(r() * cols.length)], head: KK.LOOK.skin[Math.floor(r() * 4)], ph: r() * 6.28, amp: 0.5 + r() });
-      }
-    }
-  }
+  /* arena arka planı: her arenanın kendi görseli */
+  const bgCache = {};
+  let BG = null;
+  KK.setArenaBg = (src) => {
+    if (!src) return;
+    if (bgCache[src]) { BG = bgCache[src]; return; }
+    const img = new Image();
+    img.onload = () => { bgCache[src] = img; BG = img; };
+    img.src = src;
+  };
 
   function floatText(x, y, txt, col) { S.texts.push({ x, y, txt, col, t0: performance.now(), life: 1100 }); }
   function burst(x, y, col, n, spd = 1.6) {
@@ -139,30 +84,24 @@ window.KK = window.KK || {};
     }
   }
   const bubbles = [];
-  function bubble(f, txt) { bubbles.push({ f, txt, until: performance.now() + 1800 }); }
+  function bubble(f, txt, ms) { bubbles.push({ f, txt, until: performance.now() + (ms || 1800) }); }
 
-  function spriteKeyFor(f) {
-    if (f.isPlayer) return 'oyuncu';
-    if (f.matchId && KK.SPRITE_DEFS[f.matchId]) return f.matchId;
-    return f.style;
-  }
+  const spriteKeyFor = (f) => (f.isPlayer ? 'oyuncu' : f.sprite || f.style);
 
   function render(now) {
     const t = now / 1000;
-    if (!BG) buildBg();
     ctx.setTransform(RES, 0, 0, RES, 0, 0);
-    ctx.imageSmoothingEnabled = false;
     ctx.save();
     if (S.shake > 0.4 && !reduced) ctx.translate(Math.round((rnd() - 0.5) * S.shake), Math.round((rnd() - 0.5) * S.shake));
     S.shake *= 0.85;
-    ctx.drawImage(BG, 0, 0, W, H);
-    S.excite *= 0.985;
-    for (const p of CROWD) {
-      const b = Math.round(Math.max(0, Math.sin(now / 110 + p.ph)) * S.excite * 2 * p.amp);
-      ctx.fillStyle = p.body; ctx.fillRect(p.x - 2, p.y - 3 - b, 4, 5);
-      ctx.fillStyle = p.head; ctx.fillRect(p.x - 1, p.y - 6 - b, 3, 3);
-      if (S.excite > 0.6 && p.amp > 1.2) { ctx.fillStyle = p.head; ctx.fillRect(p.x + 2, p.y - 7 - b, 1, 3); }
+    if (BG) {
+      ctx.imageSmoothingEnabled = true; ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(BG, 0, 0, W, H);
+    } else {
+      ctx.fillStyle = '#2a1c17'; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = '#c49a62'; ctx.fillRect(0, 134, W, H - 134);
     }
+    ctx.imageSmoothingEnabled = false;
     const list = S.fighters.slice().sort((a, b) => (a === S.top ? 1 : 0) - (b === S.top ? 1 : 0));
     for (const f of list) {
       f.r.hurt *= 0.9;
@@ -170,21 +109,21 @@ window.KK = window.KK || {};
     }
     S.parts = S.parts.filter((p) => p.life > 0);
     for (const p of S.parts) {
-      p.x += p.vx; p.y += p.vy; p.vy += 0.12; p.life -= 0.03;
+      p.x += p.vx; p.y += p.vy; p.vy += p.g == null ? 0.12 : p.g; p.life -= 0.03;
       if (p.y > GROUND + 1) { p.y = GROUND + 1; p.vx *= 0.4; p.vy = 0; }
-      ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x), Math.round(p.y), 1, 1);
+      ctx.fillStyle = p.col; ctx.fillRect(Math.round(p.x), Math.round(p.y), p.w || 1, 1);
     }
     for (let i = bubbles.length - 1; i >= 0; i--) if (bubbles[i].until < now) bubbles.splice(i, 1);
     ctx.font = '8px "Pixelify Sans", monospace';
     ctx.textBaseline = 'middle';
     for (const b of bubbles) {
-      const tw = Math.min(170, Math.ceil(ctx.measureText(b.txt).width));
+      const tw = Math.min(200, Math.ceil(ctx.measureText(b.txt).width));
       const bw = tw + 8, bh = 12;
-      const bx = Math.round(clamp(b.f.r.x - bw / 2, 3, W - bw - 3)), by = GROUND - 70;
+      const bx = Math.round(clamp(b.f.r.x - bw / 2, 3, W - bw - 3)), by = GROUND - 72;
       ctx.fillStyle = '#efdcb8'; ctx.fillRect(bx, by, bw, bh);
       ctx.fillStyle = '#120c0a'; ctx.fillRect(bx, by + bh, bw, 1);
       ctx.fillStyle = '#efdcb8'; ctx.fillRect(Math.round(b.f.r.x) - 1, by + bh, 3, 3);
-      ctx.fillStyle = '#120c0a'; ctx.textAlign = 'left'; ctx.fillText(b.txt, bx + 4, by + 6.5, 170);
+      ctx.fillStyle = '#120c0a'; ctx.textAlign = 'left'; ctx.fillText(b.txt, bx + 4, by + 6.5, 200);
     }
     S.texts = S.texts.filter((x) => now - x.t0 < x.life);
     ctx.textAlign = 'center';
@@ -199,7 +138,7 @@ window.KK = window.KK || {};
     ctx.restore();
     requestAnimationFrame(render);
   }
-  KK.startRender = () => { buildBg(); requestAnimationFrame(render); };
+  KK.startRender = () => { KK.setArenaBg(KK.DEFAULT_ARENA_BG); requestAnimationFrame(render); };
 
   function tween(ms, fn) {
     return new Promise((res) => {
@@ -214,38 +153,8 @@ window.KK = window.KK || {};
   }
   const idleR = () => ({ x: 0, walk: 0, strike: 0, recover: 0, hurt: 0, fall: 0, taunt: 0, kb: 0, hop: 0 });
   KK.idleR = idleR;
-
-  /* ---------- menü tanıtımı ---------- */
-  let demoToken = 0;
-  KK.showDemo = () => {
-    const tok = ++demoToken;
-    const mk = (style, slot, facing, lvl) => {
-      const f = KK.buildFoe({ id: 'demo' + rnd(), style, lvl }, ri(1, 4));
-      f.facing = facing; f.r = idleR(); f.r.x = slotX(slot);
-      return f;
-    };
-    const a = mk(pick(['dengeli', 'savunmaci']), 4, 1, 5), b = mk(pick(['tokmakci', 'hancerci', 'dengeli']), 5, -1, 5);
-    a.isPlayer = true;
-    S.fighters = [b, a]; S.texts = []; S.parts = []; S.dark = 0;
-    (async () => {
-      await wait(900);
-      while (tok === demoToken) {
-        const [att, def] = rnd() < 0.5 ? [a, b] : [b, a];
-        S.top = att;
-        const bx = att.r.x;
-        await tween(380, (k) => { att.r.strike = k; att.r.x = bx + att.facing * Math.sin(k * Math.PI / 2) * 8; });
-        if (tok !== demoToken) break;
-        const roll = rnd();
-        if (roll < 0.4) { burst(def.r.x + def.facing * 6, GROUND - 24, '#ffe08a', 8); floatText(def.r.x, GROUND - 52, 'BLOK', '#e8b04f'); }
-        else if (roll < 0.65) floatText(def.r.x, GROUND - 52, 'ISKA', '#a88f70');
-        else { def.r.hurt = 1; burst(def.r.x, GROUND - 26, '#a3231d', 8); floatText(def.r.x, GROUND - 52, '-' + ri(4, 18), '#efdcb8'); S.excite = 0.8; }
-        await tween(240, (k) => { att.r.recover = k; att.r.x = bx + att.facing * 8 * (1 - k); });
-        att.r.strike = 0; att.r.recover = 0; att.r.x = bx;
-        await wait(900 + rnd() * 900);
-      }
-    })();
-  };
-  KK.stopDemo = () => { demoToken++; };
+  KK.showDemo = () => {};
+  KK.stopDemo = () => {};
 
   /* ---------- dövüş ---------- */
   const ATK = {
@@ -253,7 +162,6 @@ window.KK = window.KK || {};
     normal: { n: 'Normal saldırı', en: 12, acc: 0, mul: 1, dur: 340 },
     power: { n: 'Güçlü saldırı', en: 24, acc: -0.2, mul: 1.8, dur: 500 },
     cift: { n: 'Çift hançer darbesi', en: 10, acc: 0.1, mul: 0.55, dur: 200 },
-    ok: { n: 'Ok', en: 8, acc: -0.05, mul: 1, dur: 420, ranged: true },
   };
   const TAUNT_EN = 4;
   const TAUNTS = [
@@ -275,54 +183,67 @@ window.KK = window.KK || {};
     f.d = KK.derive(f);
     f.hp = f.d.maxHp; f.en = f.d.maxEn;
     f.slot = slot; f.facing = facing;
+    f.buf = { gk: 0, dd: 0, ke: 0, dev: 0, ol: false, vahsi: false, zk: false, shield: 0, fresh: false };
+    f.stunned = false;
     f.r = idleR(); f.r.x = slotX(slot);
     return f;
   }
   const dist = () => Math.abs(C.p.slot - C.e.slot);
-  function atkCost(f, id) { return ATK[id].en + (id !== 'ok' ? KK.WEAPON_TYPES[f.d.wtype].extraEn : 0); }
+  const wtype = (f) => KK.WEAPON_TYPES[f.d.wtype];
+  function atkCost(f, id) {
+    const base = ATK[id].en + wtype(f).extraEn;
+    return f.buf && f.buf.vahsi ? base * 2 : base;
+  }
   KK.atkCost = atkCost;
 
   function canDo(f, o, id) {
     const d = Math.abs(f.slot - o.slot);
     if (f.isPlayer && C.tut && C.tut.allowed && !C.tut.allowed.includes(id)) return false;
+    if (id.startsWith('pot:')) {
+      if (!f.isPlayer || !C.potions) return false;
+      return C.potUsed < KK.MAX_POTIONS_PER_FIGHT && (C.potions[id.slice(4)] || 0) > 0;
+    }
     switch (id) {
       case 'fwd': return d > 1;
       case 'back': return f.facing > 0 ? f.slot > 0 : f.slot < SLOTS - 1;
-      case 'quick': case 'normal': case 'power': case 'cift': return d <= 1 && f.en >= atkCost(f, id);
-      case 'ok': return !!f.bow && d >= 2 && f.en >= atkCost(f, id);
+      case 'quick': case 'normal': case 'power': return d <= f.d.range && f.en >= atkCost(f, id);
+      case 'cift': return d <= 1 && f.en >= atkCost(f, id);
       case 'taunt': return f.en >= TAUNT_EN;
       case 'rest': return true;
-      case 'pot_can': case 'pot_enerji': {
-        if (!f.isPlayer || !C.potions) return false;
-        const k = id.slice(4);
-        return C.potUsed < KK.MAX_POTIONS_PER_FIGHT && (C.potions[k] || 0) > 0;
-      }
     }
     return false;
   }
   KK.canDo = (id) => C && canDo(C.p, C.e, id);
 
-  function hitChance(a, t, A, id) {
-    const wAcc = id === 'ok' ? KK.WEAPON_TYPES.yay.acc : KK.WEAPON_TYPES[a.d.wtype].acc;
-    return clamp(0.62 + (a.d.atk - t.d.agi) * 0.025 + A.acc + wAcc, 0.1, 0.95);
+  function hitChance(a, t, A) {
+    return clamp(0.62 + (a.d.atk - t.d.agi) * 0.025 + A.acc + wtype(a).acc, 0.1, 0.95);
   }
-  function dmgRange(a, t, A, id) {
-    const red = 100 / (100 + t.d.armor * 1.8 + t.d.def * 2);
-    const wmul = id === 'ok' ? 1 : KK.WEAPON_TYPES[a.d.wtype].mul;
-    const [mn, mx] = id === 'ok' ? [a.bow.min, a.bow.max] : [a.d.wmin, a.d.wmax];
-    const strF = id === 'ok' ? 0.5 : 1.1;
-    const f = (w) => Math.max(1, Math.round((w + a.d.str * strF) * A.mul * wmul * red));
-    return [f(mn), f(mx)];
+  function reduction(a, t) {
+    const pierce = a.buf && a.buf.zk ? 0.25 : 1;
+    const def = t.d.def + (t.buf && t.buf.dev > 0 ? 5 : 0);
+    return 100 / (100 + t.d.armor * 1.8 * pierce + def * 2 * pierce);
+  }
+  function dmgMul(a, t, A) {
+    let m = A.mul * wtype(a).mul;
+    if (wtype(a).nearMul && Math.abs(a.slot - t.slot) <= 1) m *= wtype(a).nearMul;
+    if (a.buf && a.buf.gk > 0) m *= 1.3;
+    if (t.buf && t.buf.dd > 0) m *= 0.7;
+    return m;
+  }
+  function dmgRange(a, t, A) {
+    const red = reduction(a, t), m = dmgMul(a, t, A);
+    const f = (w) => Math.max(1, Math.round((w + a.d.str * 1.1) * m * red));
+    return [f(a.d.wmin), f(a.d.wmax)];
   }
   KK.preview = (id) => {
     if (!C) return null;
     const A = ATK[id];
     if (!A) return null;
-    return { hit: hitChance(C.p, C.e, A, id), dmg: dmgRange(C.p, C.e, A, id), en: atkCost(C.p, id) };
+    return { hit: hitChance(C.p, C.e, A), dmg: dmgRange(C.p, C.e, A), en: atkCost(C.p, id) };
   };
   KK.tauntChance = () => (C ? clamp(0.45 + (C.p.d.cha - C.e.d.cha) * 0.04, 0.1, 0.9) : 0);
 
-  function textAbove(f, txt, col) { floatText(f.r.x, GROUND - 52, txt, col); }
+  function textAbove(f, txt, col) { floatText(f.r.x, GROUND - 56, txt, col); }
   function crowd(delta) {
     C.crowd = clamp(C.crowd + delta, 0, 10);
     if (delta > 0) S.excite = Math.min(1.2, S.excite + 0.4 * delta);
@@ -339,63 +260,125 @@ window.KK = window.KK || {};
 
   async function strike(a, t, id) {
     const A = ATK[id];
-    const bx = a.r.x, dir = a.facing;
-    if (A.ranged) {
+    const bx = a.r.x, dir = a.facing, d = Math.abs(a.slot - t.slot);
+    if (wtype(a).ranged && d > 1) {
       KK.sfx('bow');
       await tween(reduced ? 120 : 260, (k) => { a.r.taunt = Math.sin(k * Math.PI) * 0.5; });
       a.r.taunt = 0;
-      const ar = { x: a.r.x + dir * 8, y: GROUND - 27 };
-      const tx = t.r.x;
-      await tween(reduced ? 100 : 260, (k) => {
-        ar.x = lerp(a.r.x + dir * 8, tx, k);
-        S.parts.push({ x: ar.x, y: ar.y, vx: 0, vy: 0, life: 0.15, col: '#d8c9a8' });
+      const y = GROUND - 30, x0 = a.r.x + dir * 10, x1 = t.r.x;
+      await tween(reduced ? 100 : 180 + d * 40, (k) => {
+        S.parts.push({ x: lerp(x0, x1, k), y, vx: 0, vy: 0, g: 0, life: 0.12, col: '#e8dcc0', w: 3 });
       });
       resolveAttack(a, t, A, id);
       return;
     }
+    const reach = d > 1 ? 8 + (d - 1) * 14 : 8;
     KK.sfx('swing');
-    await tween(reduced ? 120 : A.dur, (k) => { a.r.strike = k; a.r.x = bx + dir * Math.sin(k * Math.PI / 2) * 8; });
+    await tween(reduced ? 120 : A.dur, (k) => { a.r.strike = k; a.r.x = bx + dir * Math.sin(k * Math.PI / 2) * reach; });
     resolveAttack(a, t, A, id);
-    await tween(reduced ? 100 : 220, (k) => { a.r.recover = k; a.r.x = bx + dir * 8 * (1 - k); });
+    await tween(reduced ? 100 : 220, (k) => { a.r.recover = k; a.r.x = bx + dir * reach * (1 - k); });
     a.r.strike = 0; a.r.recover = 0; a.r.x = bx;
+  }
+
+  function applyDamage(a, t, dmg) {
+    if (t.buf.shield > 0) {
+      const ab = Math.min(t.buf.shield, dmg);
+      t.buf.shield -= ab; dmg -= ab;
+      if (ab) floatText(t.r.x, GROUND - 66, `KALKAN -${ab}`, '#8fd0ff');
+    }
+    const floor = C.kind === 'tutorial' && t.isPlayer ? 1 : 0;
+    if (t.hp - dmg <= 0 && t.buf.ol) {
+      t.buf.ol = false; t.hp = 1;
+      textAbove(t, 'ÖLÜMSÜZ!', '#ffe08a'); burst(t.r.x, GROUND - 30, '#ffe08a', 16, 2);
+      log(t.isPlayer ? 'Ölümsüzlük İksiri seni ölümden döndürdü!' : `${t.name} ölümden döndü!`);
+      return dmg;
+    }
+    t.hp = Math.max(floor, t.hp - dmg);
+    return dmg;
   }
 
   function resolveAttack(a, t, A, id) {
     const hx = t.r.x, hy = GROUND - 26;
     const name = a.isPlayer ? 'Sen' : a.name;
-    if (!C.forceBlock && rnd() > hitChance(a, t, A, id)) {
+    const wt = wtype(a);
+    if (!C.forceBlock && rnd() > hitChance(a, t, A)) {
       textAbove(t, 'ISKA', '#a88f70'); KK.sfx('miss');
       tween(260, (k) => { t.r.kb = Math.sin(k * Math.PI) * 4; }).then(() => { t.r.kb = 0; });
       log(a.isPlayer ? `${A.n} boşa gitti.` : `${a.name} ıskaladı.`);
       return;
     }
+    let pierced = false;
     if (C.forceBlock || rnd() < t.d.block) {
-      textAbove(t, 'BLOK', '#e8b04f'); KK.sfx('clang');
-      burst(hx + t.facing * 7, hy + 2, '#ffe08a', 8); S.shake = 2;
-      log(a.isPlayer ? `${t.name} kalkanıyla savuşturdu.` : 'Kalkanın darbeyi kendiliğinden karşıladı.');
-      return;
+      if (!C.forceBlock && wt.pierce && rnd() < wt.pierce) pierced = true;
+      else {
+        textAbove(t, 'BLOK', '#e8b04f'); KK.sfx('clang');
+        burst(hx + t.facing * 7, hy + 2, '#ffe08a', 8); S.shake = 2;
+        log(a.isPlayer ? `${t.name} kalkanıyla savuşturdu.` : 'Kalkanın darbeyi kendiliğinden karşıladı.');
+        return;
+      }
     }
-    const wmul = id === 'ok' ? 1 : KK.WEAPON_TYPES[a.d.wtype].mul;
-    const [mn, mx] = id === 'ok' ? [a.bow.min, a.bow.max] : [a.d.wmin, a.d.wmax];
-    let raw = (ri(mn, mx) + a.d.str * (id === 'ok' ? 0.5 : 1.1)) * A.mul * wmul;
+    let raw = (ri(a.d.wmin, a.d.wmax) + a.d.str * 1.1) * dmgMul(a, t, A);
     const crit = rnd() < a.d.crit;
     if (crit) raw *= 1.6;
     if (C.kind === 'tutorial' && !a.isPlayer) raw *= 0.4;
-    const red = 100 / (100 + t.d.armor * 1.8 + t.d.def * 2);
-    const dmg = Math.max(1, Math.round(raw * red));
-    t.hp = Math.max(C.kind === 'tutorial' && t.isPlayer ? 1 : 0, t.hp - dmg);
+    let dmg = Math.max(1, Math.round(raw * reduction(a, t)));
+    dmg = applyDamage(a, t, dmg);
     t.r.hurt = 1;
     tween(240, (k) => { t.r.kb = Math.sin(k * Math.PI) * (crit ? 5 : 3); }).then(() => { t.r.kb = 0; });
     burst(hx, hy, '#a3231d', crit ? 16 : 8, crit ? 2.2 : 1.6);
     S.shake = crit ? 5 : 2.5;
     textAbove(t, crit ? `KRİTİK -${dmg}` : `-${dmg}`, crit ? '#ff6a4d' : '#efdcb8');
     KK.sfx(crit ? 'crit' : 'hit');
+    if (pierced) { floatText(t.r.x, GROUND - 66, 'KALKANI DELDİ', '#e8b04f'); }
+    if (a.buf.ke > 0 && dmg > 0) {
+      const heal = Math.min(a.d.maxHp - a.hp, Math.round(dmg * 0.4));
+      if (heal > 0) { a.hp += heal; floatText(a.r.x, GROUND - 66, `+${heal}`, '#7fbf5a'); }
+    }
+    if (wt.stun && t.hp > 0 && rnd() < wt.stun) {
+      t.stunned = true;
+      floatText(t.r.x, GROUND - 76, 'SERSEMLEDİ', '#c9a0ff');
+    }
     if (a.isPlayer) {
       if (crit || id === 'power') { crowd(1); KK.sfx('cheer'); }
-      log(`${A.n} ile ${dmg} hasar verdin${crit ? ' (kritik!)' : ''}.`);
+      log(`${A.n} ile ${dmg} hasar verdin${crit ? ' (kritik!)' : ''}${pierced ? ', balta kalkanı deldi' : ''}${t.stunned ? ', rakip sersemledi' : ''}.`);
     } else {
       if (crit) crowd(-1);
-      log(`${name}: ${A.n.toLowerCase()}, ${dmg} hasar${crit ? ' (kritik!)' : ''}.`);
+      log(`${name}: ${A.n.toLowerCase()}, ${dmg} hasar${crit ? ' (kritik!)' : ''}${t.stunned ? ', sersemledin' : ''}.`);
+    }
+  }
+
+  function drinkPotion(a, id) {
+    const pt = KK.potion(id), b = a.buf;
+    C.potions[id]--; C.potUsed++;
+    if (C.onPotionUsed) C.onPotionUsed(id);
+    KK.sfx('potion');
+    let msg = `${pt.n} içtin.`;
+    switch (id) {
+      case 'can': { const g = Math.min(a.d.maxHp - a.hp, Math.round(a.d.maxHp * 0.35)); a.hp += g; textAbove(a, `+${g} CAN`, '#7fbf5a'); msg = `Can İksiri içtin, ${g} can kazandın.`; break; }
+      case 'enerji': { const g = Math.min(a.d.maxEn - a.en, Math.round(a.d.maxEn * 0.5)); a.en += g; textAbove(a, `+${g} EN`, '#d9a52b'); msg = `Enerji İksiri içtin, ${g} enerji kazandın.`; break; }
+      case 'gladyator': b.gk = 3; b.fresh = true; textAbove(a, 'GÜÇ +%30', '#ff8a5a'); break;
+      case 'demirderi': b.dd = 3; b.fresh = true; textAbove(a, 'DEMİR DERİ', '#b9bec4'); break;
+      case 'kanemici': b.ke = 3; b.fresh = true; textAbove(a, 'KAN EMİCİ', '#d33a2c'); break;
+      case 'olumsuzluk': b.ol = true; textAbove(a, 'ÖLÜMSÜZLÜK', '#ffe08a'); break;
+      case 'devkani': {
+        if (b.dev <= 0) { const add = Math.round(a.d.maxHp * 0.25); a.d.maxHp += add; a.hp += add; a.devAdd = add; }
+        b.dev = 4; b.fresh = true; textAbove(a, 'DEV KANI', '#ff8a5a'); break;
+      }
+      case 'vahsikan': b.vahsi = true; textAbove(a, 'VAHŞİ KAN', '#d33a2c'); break;
+      case 'zirhkiran': b.zk = true; textAbove(a, 'ZIRH KIRAN', '#c9a0ff'); break;
+      case 'muhafiz': { const s2 = 25 + a.lvl * 3; b.shield += s2; textAbove(a, `KALKAN +${s2}`, '#8fd0ff'); break; }
+    }
+    burst(a.r.x, GROUND - 30, '#e8dcc0', 10, 1);
+    log(msg);
+  }
+
+  function tickBuffs(f) {
+    const b = f.buf;
+    if (b.fresh) { b.fresh = false; return; }
+    ['gk', 'dd', 'ke'].forEach((k) => { if (b[k] > 0) b[k]--; });
+    if (b.dev > 0) {
+      b.dev--;
+      if (b.dev === 0 && f.devAdd) { f.d.maxHp -= f.devAdd; f.hp = Math.min(f.hp, f.d.maxHp); f.devAdd = 0; }
     }
   }
 
@@ -413,10 +396,11 @@ window.KK = window.KK || {};
       log(a.isPlayer ? 'Bir adım geri çekildin.' : `${a.name} geri çekildi.`);
     } else if (ATK[id]) {
       a.en -= atkCost(a, id);
-      if (id === 'cift') {
-        await strike(a, t, 'cift');
-        if (t.hp > 0) await strike(a, t, 'cift');
-      } else await strike(a, t, id);
+      const twice = id === 'cift' || a.buf.vahsi;
+      if (a.buf.vahsi) { a.buf.vahsi = false; textAbove(a, 'VAHŞİ KAN!', '#d33a2c'); }
+      await strike(a, t, id);
+      if (twice && t.hp > 0) await strike(a, t, id);
+      a.buf.zk = false;
     } else if (id === 'taunt') {
       a.en -= TAUNT_EN;
       KK.sfx('taunt'); bubble(a, pick(TAUNTS));
@@ -441,24 +425,15 @@ window.KK = window.KK || {};
       await tween(reduced ? 150 : 500, (k) => { a.r.hop = -Math.round(Math.sin(k * Math.PI) * 1); });
       a.r.hop = 0;
       log(a.isPlayer ? `Soluklandın, ${gain} enerji topladın.` : `${a.name} soluklandı.`);
-    } else if (id === 'pot_can' || id === 'pot_enerji') {
-      const k = id.slice(4);
-      C.potions[k]--; C.potUsed++;
-      KK.sfx('potion');
-      if (k === 'can') {
-        const g = Math.min(a.d.maxHp - a.hp, Math.round(a.d.maxHp * 0.4)); a.hp += g;
-        textAbove(a, `+${g} CAN`, '#7fbf5a'); log(`Can İksiri içtin, ${g} can kazandın.`);
-      } else {
-        const g = Math.min(a.d.maxEn - a.en, Math.round(a.d.maxEn * 0.5)); a.en += g;
-        textAbove(a, `+${g} EN`, '#d9a52b'); log(`Enerji İksiri içtin, ${g} enerji kazandın.`);
-      }
-      burst(a.r.x, GROUND - 30, k === 'can' ? '#7fbf5a' : '#d9a52b', 10, 1);
+    } else if (id.startsWith('pot:')) {
+      drinkPotion(a, id.slice(4));
       await wait(reduced ? 150 : 450);
     } else if (id === 'wait') {
       log(`${a.name} bekliyor.`);
       await wait(reduced ? 100 : 300);
     }
-    if (id !== 'rest' && id !== 'pot_enerji') a.en = Math.min(a.d.maxEn, a.en + 4);
+    if (id !== 'rest' && id !== 'pot:enerji') a.en = Math.min(a.d.maxEn, a.en + 4);
+    tickBuffs(a);
     hud();
   }
 
@@ -479,11 +454,16 @@ window.KK = window.KK || {};
         if (can('back') && rnd() < 0.75) return 'back';
         return can('quick') ? 'quick' : 'rest';
       }
-      if (d === 2 && can('back') && rnd() < 0.4) return 'back';
-      if (can('ok') && enR > 0.2) return 'ok';
-      return 'rest';
+      if (d === 2 && can('back') && rnd() < 0.35) return 'back';
+      if (d > me.d.range) return 'fwd';
+      if (enR < 0.25) return 'rest';
+      const o = [];
+      if (can('normal')) o.push(['normal', 3]);
+      if (can('power')) o.push(['power', fh < 0.3 ? 3 : 1]);
+      if (can('quick')) o.push(['quick', 1.5]);
+      return o.length ? weighted(o) : 'rest';
     }
-    if (d > 1) {
+    if (d > me.d.range) {
       if (enR < 0.3) return 'rest';
       if (st === 'savunmaci' && enR < 0.6 && rnd() < 0.5) return 'rest';
       if (can('taunt') && rnd() < 0.08) return 'taunt';
@@ -519,7 +499,7 @@ window.KK = window.KK || {};
 
   /* ---------- eğitim adımları ---------- */
   const TUT_STEPS = [
-    { text: 'Rakibe yaklaş. Saldırmak için ona bitişik olmalısın. İlerle’ye bas.', allowed: ['fwd'], done: () => dist() <= 1 },
+    { text: 'Rakibe yaklaş. Kılıçla saldırmak için ona bitişik olmalısın. İlerle’ye bas.', allowed: ['fwd'], done: () => dist() <= 1 },
     { text: 'Hızlı Saldırı: az enerji harcar, sık isabet eder.', allowed: ['quick'] },
     { text: 'Normal Saldırı: dengeli bir vuruş.', allowed: ['normal'] },
     { text: 'Güçlü Saldırı: çok vurur ama çok enerji harcar ve sık ıskalar.', allowed: ['power'], after: 'block' },
@@ -536,6 +516,14 @@ window.KK = window.KK || {};
       return;
     }
     if (C.tut && C.tut.step <= 3) { await perform(C.e, C.p, 'wait'); return; }
+    if (C.e.stunned) {
+      C.e.stunned = false;
+      textAbove(C.e, 'SERSEM', '#c9a0ff');
+      log(`${C.e.name} sersemledi, bu turu kaçırdı.`);
+      await wait(reduced ? 150 : 500);
+      tickBuffs(C.e); hud();
+      return;
+    }
     await perform(C.e, C.p, ai(C.e, C.p));
   }
 
@@ -566,6 +554,15 @@ window.KK = window.KK || {};
     await wait(reduced ? 120 : 320);
     await enemyTurn();
     if (await checkEnd()) return;
+    while (C.p.stunned) {
+      C.p.stunned = false;
+      textAbove(C.p, 'SERSEM', '#c9a0ff');
+      log('Sersemledin, bu turu kaçırdın.');
+      await wait(reduced ? 150 : 600);
+      tickBuffs(C.p);
+      await enemyTurn();
+      if (await checkEnd()) return;
+    }
     C.turn++;
     C.busy = false;
     syncTutorial();
@@ -594,21 +591,21 @@ window.KK = window.KK || {};
     return true;
   }
 
-  /* opts: { player, foe, kind: 'story'|'training'|'tutorial', potions, matchId, onEnd, onHud, onLog, onTutorial } */
+  /* opts: { player, foe, kind: 'story'|'training'|'tutorial', potions, bg, onEnd, onHud, onLog, onTutorial, onPotionUsed } */
   KK.startFight = (opts) => {
-    KK.stopDemo();
     const p = prep(opts.player, 2, 1, true);
     const e = prep(opts.foe, opts.kind === 'tutorial' ? 6 : 7, -1, false);
-    e.matchId = opts.matchId;
+    KK.setArenaBg(opts.bg || KK.DEFAULT_ARENA_BG);
     C = {
       p, e, kind: opts.kind, busy: false, over: false, crowd: 2, turn: 1,
       potions: opts.potions, potUsed: 0, forceBlock: false,
-      onEnd: opts.onEnd, onHud: opts.onHud, onLog: opts.onLog, onTutorial: opts.onTutorial,
+      onEnd: opts.onEnd, onHud: opts.onHud, onLog: opts.onLog, onTutorial: opts.onTutorial, onPotionUsed: opts.onPotionUsed,
       tut: opts.kind === 'tutorial' ? { step: 0, allowed: null, pendingBlock: false } : null,
     };
     S.fighters = [e, p]; S.texts = []; S.parts = []; S.top = p; S.dark = 0;
     bubbles.length = 0;
     floatText(W / 2, 80, 'DÖVÜŞ BAŞLASIN!', '#e8b04f');
+    if (e.intro) bubble(e, e.intro, 3600);
     S.excite = 1; KK.sfx('horn');
     syncTutorial();
     hud();

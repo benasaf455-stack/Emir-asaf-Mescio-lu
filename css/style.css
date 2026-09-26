@@ -227,3 +227,55 @@ kbd { font: 11px/1 var(--font); border: 1px solid var(--line-2); padding: 2px 4p
 @media (prefers-reduced-motion: reduce) {
   * { transition: none !important; animation: none !important; }
 }
+
+/* ---------- şehir menüsü (görsel + tıklanır alanlar) ---------- */
+.city-screen { position: relative; border: 2px solid var(--line-2); box-shadow: 0 4px 0 var(--shadow); background: #000; container-type: inline-size; }
+.city-img { display: block; width: 100%; height: auto; }
+.city-screen button { font-size: 0; color: transparent; padding: 0; cursor: pointer; }
+.spot { position: absolute; background: transparent; border: 0; border-radius: 6px; transition: background .12s, box-shadow .12s; }
+.spot:hover, .spot:focus-visible { background: rgba(255, 214, 140, .12); box-shadow: inset 0 0 0 2px rgba(232, 176, 79, .7); outline: none; }
+.cbtn { position: absolute; top: 83.85%; height: 10.84%; background: transparent; border: 0; transition: background .1s; }
+.cbtn:hover, .cbtn:focus-visible { background: rgba(255, 214, 140, .16); outline: none; }
+.cbtn:active { background: rgba(255, 214, 140, .28); }
+.medal { position: absolute; left: 3.71%; top: 4.04%; width: 4.6%; aspect-ratio: 1; border-radius: 50%; border: 0; background: transparent; overflow: hidden; }
+.medal canvas { width: 100%; height: 100%; display: block; border-radius: 50%; image-rendering: auto; }
+.medal:hover, .medal:focus-visible { box-shadow: 0 0 0 3px var(--bronze-2); outline: none; }
+.pts-dot { position: absolute; left: 7.4%; top: 3.2%; min-width: 2.2cqw; height: 2.2cqw; padding: 0 .4cqw; border-radius: 1.1cqw; background: var(--blood-2); border: 2px solid var(--shadow); color: var(--text); font-size: 1.3cqw; line-height: 1.9cqw; text-align: center; pointer-events: none; }
+.hudbar { position: absolute; left: 12.38%; width: 7.54%; color: #f3e2bd; font-size: .95cqw; line-height: 1; display: flex; align-items: center; padding: 0 .5cqw; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-shadow: 1px 1px 0 #000; pointer-events: none; }
+.hb1 { top: 3.93%; height: 2.34%; }
+.hb2 { top: 7.44%; height: 2.13%; }
+.hb3 { top: 10.84%; height: 2.34%; color: var(--bronze-2); }
+.hb2 i { position: absolute; left: 0; top: 0; bottom: 0; background: #56662c; }
+.hb2 span { position: relative; overflow: hidden; text-overflow: ellipsis; }
+.city-title { position: absolute; left: 39%; top: 3.19%; width: 22%; height: 7.97%; display: flex; align-items: center; justify-content: center; color: var(--bronze-2); font-size: 2.3cqw; font-weight: 700; letter-spacing: .08em; text-shadow: 2px 2px 0 #000; pointer-events: none; }
+
+/* ---------- şehir pencereleri ---------- */
+.win-wrap { position: fixed; inset: 0; background: rgba(5, 3, 2, .72); display: flex; align-items: center; justify-content: center; padding: 12px; z-index: 12; }
+.win {
+  width: 100%; max-width: 900px; max-height: calc(100vh - 24px); display: flex; flex-direction: column;
+  background: #1d1411; border: 3px solid #c8842f; box-shadow: inset 0 0 0 2px #3a2618, inset 0 0 0 5px #6b4a36, 0 8px 0 var(--shadow);
+}
+.win-head { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 2px solid #6b4a36; background: #2a1c17; }
+.win-head h2 { flex: 1; font-size: 24px; text-shadow: 2px 2px 0 #000; }
+.win-gold { color: var(--bronze-2); font-weight: 700; font-variant-numeric: tabular-nums; }
+.win-body { padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.ico { width: 48px; height: 48px; object-fit: contain; flex: none; image-rendering: auto; background: rgba(0,0,0,.25); border: 1px solid var(--line); }
+.item.ico-row { grid-template-columns: 56px minmax(0, 1fr) auto; }
+.item.ico-row .ico { grid-row: 1 / span 2; }
+.item.ico-row .nm, .item.ico-row .st { grid-column: 2; }
+.item.ico-row .buy { grid-column: 3; }
+.item.locked .nm, .item.locked .ico { opacity: .45; }
+.slot-row { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 4px 10px; align-items: center; }
+.equip-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.equip-pick { display: flex; align-items: center; gap: 6px; border: 2px solid var(--line); background: var(--panel-2); color: var(--text); padding: 3px 8px 3px 3px; cursor: pointer; font: inherit; font-size: 14px; }
+.equip-pick .ico { width: 32px; height: 32px; }
+.equip-pick:hover { border-color: var(--bronze); }
+
+/* ---------- dövüş: iksir tepsisi ve güçlendirmeler ---------- */
+.pot-tray { display: flex; flex-wrap: wrap; gap: 6px; padding: 8px; border: 2px solid var(--line); background: var(--panel); }
+.pot-btn { display: flex; align-items: center; gap: 6px; border: 2px solid var(--line); background: var(--panel-2); color: var(--text); padding: 3px 8px 3px 3px; cursor: pointer; font: inherit; font-size: 14px; }
+.pot-btn .ico { width: 34px; height: 34px; }
+.pot-btn:hover:not(:disabled) { border-color: var(--bronze); }
+.pot-btn:disabled { opacity: .4; cursor: not-allowed; }
+.buffs { display: flex; flex-wrap: wrap; gap: 4px; min-height: 0; }
+.buffs span { font-size: 11px; border: 1px solid var(--line-2); padding: 0 4px; color: var(--bronze-2); }

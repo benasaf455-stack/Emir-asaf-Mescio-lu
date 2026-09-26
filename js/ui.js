@@ -6,31 +6,39 @@ window.KK = window.KK || {};
   const $ = (s) => document.querySelector(s);
   const $$ = (s) => Array.from(document.querySelectorAll(s));
   const { clamp } = KK.util;
-  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX'];
+  const ROMAN = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X'];
   const h = (tag, attrs, ...kids) => {
     const el = document.createElement(tag);
     if (attrs) Object.entries(attrs).forEach(([k, v]) => {
       if (v == null || v === false) return;
       if (k === 'class') el.className = v;
       else if (k.startsWith('on')) el[k] = v;
-      else if (k === 'text') el.textContent = v;
       else el.setAttribute(k, v === true ? '' : v);
     });
     kids.flat().forEach((c) => { if (c != null && c !== false) el.append(c.nodeType ? c : String(c)); });
     return el;
   };
+  const icon = (src, alt) => h('img', { class: 'ico', src, alt: alt || '', loading: 'lazy' });
 
   /* ---------- kayıt ---------- */
   let P = null;
   const save = () => { try { localStorage.setItem(KK.SAVE_KEY, JSON.stringify(P)); } catch (e) { /* kayıt yapılamadı */ } };
-  const load = () => { try { const s = localStorage.getItem(KK.SAVE_KEY); return s ? JSON.parse(s) : null; } catch (e) { return null; } };
+  const load = () => {
+    try {
+      const s = localStorage.getItem(KK.SAVE_KEY);
+      if (!s) return null;
+      const d = JSON.parse(s);
+      d.potions = d.potions || {};
+      return d;
+    } catch (e) { return null; }
+  };
 
-  function newPlayer(name, look, stats, pts) {
+  function newPlayer(name, stats, pts) {
     P = {
-      v: 1, name, look, lvl: 1, xp: 0, pts, gold: KK.START_GOLD,
+      v: 2, name, lvl: 1, xp: 0, pts, gold: KK.START_GOLD,
       stats: Object.assign({}, stats),
       owned: KK.START_OWNED.slice(), equip: Object.assign({}, KK.START_EQUIP),
-      potions: { can: 1, enerji: 0 },
+      potions: Object.assign({}, KK.START_POTIONS),
       prog: { tutorial: false, arena: 0, match: 0 },
       wins: 0, losses: 0, rescues: 0, trainCount: 0,
     };
@@ -38,8 +46,10 @@ window.KK = window.KK || {};
   }
   const playerFighter = () => ({
     name: P.name, lvl: P.lvl, stats: P.stats, equip: P.equip,
-    look: Object.assign({ tunic: KK.PLAYER_TUNIC }, P.look), isPlayer: true,
+    look: { skin: '#d9a577', hair: '#24160e', beard: 'kisa', scar: 'yok', tunic: KK.PLAYER_TUNIC }, isPlayer: true,
   });
+  const unlocked = (it) => P.prog.arena >= (it.arena || 0);
+  const arenaName = (i) => (KK.ARENAS[i] ? KK.ARENAS[i].n : 'Final');
 
   /* ---------- ekranlar ---------- */
   let screen = 'menu';
@@ -48,8 +58,8 @@ window.KK = window.KK || {};
     ['menu', 'create', 'city', 'fight'].forEach((s) => { $('#' + s).hidden = s !== name; });
     $('#stage').hidden = name !== 'fight';
     $('#hud').hidden = name !== 'fight';
-    $('#chips').hidden = !(name === 'city' || name === 'fight');
-    document.querySelector('.topbar').hidden = name === 'menu';
+    $('#chips').hidden = name !== 'fight';
+    document.querySelector('.topbar').hidden = name === 'menu' || name === 'city';
     chips();
     window.scrollTo(0, 0);
   }
@@ -76,7 +86,7 @@ window.KK = window.KK || {};
   /* ---------- menü ---------- */
   function goMenu() {
     KK.endFight();
-    KK.stopDemo();
+    closeWin();
     show('menu');
     const s = load();
     $('#contBtn').disabled = !s;
@@ -95,17 +105,15 @@ window.KK = window.KK || {};
     row.lastChild.focus();
   }
   const HOW = [
-    ['Amaç', 'Arenalarda dövüş, altın ve tecrübe kazan. Her arenanın şampiyonunu yenince sonraki arena açılır.'],
-    ['Hareket', 'Saldırmak için rakibe bitişik olmalısın. İlerle (D) ve Geri Çekil (A) ile mesafeyi ayarla.'],
+    ['Amaç', 'Arenalarda dövüş, altın ve tecrübe kazan. Her arenanın şampiyonunu yenince sonraki arena ve yeni eşyalar açılır.'],
+    ['Hareket', 'Rakibe yaklaşmak için İlerle (D), uzaklaşmak için Geri Çekil (A). Kılıç, hançer, tokmak ve balta bitişikken; mızrak 2 adımdan; yay uzaktan vurur.'],
     ['Saldırılar', 'Hızlı (Q) az enerji harcar ve sık isabet eder. Normal (W) dengelidir. Güçlü (E) çok vurur ama sık ıskalar.'],
     ['Savunma ve enerji', 'Kalkanın ve zırhın darbeleri kendiliğinden karşılar. Her saldırı enerji harcar; Dinlen (S) ile enerji toplarsın.'],
     ['Seyirci', 'Alay Et (R), güçlü ve kritik vuruşlar seyirciyi coşturur. Coşkulu seyirci daha çok altın getirir.'],
-    ['İksirler', 'Can (1) ve Enerji (2) iksiri bir tur harcar. Bir dövüşte en fazla 2 iksir içebilirsin.'],
-    ['Şehir', 'Maçlar arasında Mağaza’dan eşya al, Ekipman’dan kuşan, Karakter’den puan dağıt. Eğitim Alanı’nda isteğe bağlı dövüşler yapabilirsin.'],
+    ['İksirler', 'İksir (1) ile yanındaki iksirlerden birini içersin. İçmek bir tur harcar; bir dövüşte en fazla 2 iksir içebilirsin.'],
+    ['Şehir', 'Demirciden silah, zırhçıdan zırh, miğfer ve kalkan, iksirciden iksir alırsın. Sol üstteki madalyondan puan dağıtır ve eşya kuşanırsın.'],
   ];
-  function howTo() {
-    dialog('Nasıl Oynanır', HOW.map(([t, d]) => h('div', null, h('h3', null, t), h('p', null, d))), [{ label: 'Tamam' }]);
-  }
+  function howTo() { dialog('Nasıl Oynanır', HOW.map(([t, d]) => h('div', null, h('h3', null, t), h('p', null, d))), [{ label: 'Tamam' }]); }
   function settings() {
     const btn = h('button', { class: 'btn ghost', type: 'button', 'aria-pressed': String(KK.soundOn) }, KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı');
     btn.onclick = () => { toggleSound(); btn.textContent = KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı'; btn.setAttribute('aria-pressed', String(KK.soundOn)); };
@@ -114,17 +122,17 @@ window.KK = window.KK || {};
   function toggleSound() {
     KK.soundOn = !KK.soundOn;
     try { localStorage.setItem('kilic-ve-kalkan-ses', KK.soundOn ? '1' : '0'); } catch (e) { /* yok */ }
-    $('#soundBtn').textContent = KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı';
+    const t = KK.soundOn ? 'Ses: Açık' : 'Ses: Kapalı';
+    $('#soundBtn').textContent = t; $('#citySound').textContent = t;
     $('#soundBtn').setAttribute('aria-pressed', String(KK.soundOn));
     if (KK.soundOn) KK.audio();
   }
 
   /* ---------- karakter oluşturma ---------- */
-  const CR = { stats: {}, pts: 0, look: {} };
+  const CR = { stats: {}, pts: 0 };
   function resetCreate() {
     KK.STATS.forEach((s) => { CR.stats[s.k] = 3; });
     CR.pts = KK.START_POINTS;
-    CR.look = { skin: KK.LOOK.skin[1], hair: KK.LOOK.hair[0], beard: 'kisa', scar: 'yok' };
   }
   function statRows(el, stats, o) {
     el.innerHTML = '';
@@ -138,23 +146,6 @@ window.KK = window.KK || {};
     });
   }
   function renderCreate() {
-    const sw = (el, list, key) => {
-      el.innerHTML = '';
-      list.forEach((c) => el.append(h('button', {
-        class: 'sw', type: 'button', style: `background:${c}`, 'aria-label': c,
-        'aria-pressed': String(CR.look[key] === c), onclick: () => { CR.look[key] = c; renderCreate(); },
-      })));
-    };
-    const seg = (el, list, key) => {
-      el.innerHTML = '';
-      list.forEach((o) => el.append(h('button', {
-        type: 'button', 'aria-pressed': String(CR.look[key] === o.k), onclick: () => { CR.look[key] = o.k; renderCreate(); },
-      }, o.n)));
-    };
-    sw($('#swSkin'), KK.LOOK.skin, 'skin');
-    sw($('#swHair'), KK.LOOK.hair, 'hair');
-    seg($('#segBeard'), KK.LOOK.beard, 'beard');
-    seg($('#segScar'), KK.LOOK.scar, 'scar');
     $('#createPts').textContent = CR.pts;
     statRows($('#createStats'), CR.stats, {
       minus: (k) => { CR.stats[k]--; CR.pts++; renderCreate(); },
@@ -162,50 +153,81 @@ window.KK = window.KK || {};
       plus: (k) => { CR.stats[k]++; CR.pts--; renderCreate(); },
       canPlus: () => CR.pts > 0,
     });
-    $('#createNote').textContent = CR.pts > 0 ? `${CR.pts} puanın kaldı. İstersen sonra Karakter ekranında dağıtabilirsin.` : 'Hazırsın.';
-    drawPortrait($('#createPortrait'), {
-      look: Object.assign({ tunic: KK.PLAYER_TUNIC }, CR.look), equip: KK.START_EQUIP, isPlayer: true,
-    }, 1, 'oyuncu');
+    $('#createNote').textContent = CR.pts > 0 ? `${CR.pts} puanın kaldı. İstersen sonra karakter ekranında dağıtabilirsin.` : 'Hazırsın.';
+    drawPortrait($('#createPortrait'), { look: { skin: '#d9a577', hair: '#24160e', tunic: KK.PLAYER_TUNIC }, equip: KK.START_EQUIP, isPlayer: true }, 1, 'oyuncu');
   }
 
   /* ---------- şehir menüsü ---------- */
-  let tab = 'arena', shopTab = 'silah';
-  function goCity(t) {
-    if (t) tab = t;
+  function goCity() {
     KK.endFight();
-    KK.stopDemo();
     show('city');
-    renderCity();
+    renderCityHud();
   }
-  function renderCity() {
-    chips();
-    $$('#cityTabs .tab').forEach((b) => b.setAttribute('aria-selected', String(b.dataset.tab === tab)));
-    $('#ptsBadge').hidden = !P.pts;
-    $('#ptsBadge').textContent = P.pts;
-    const body = $('#cityBody');
+  function renderCityHud() {
+    if (!P) return;
+    $('#hbName').textContent = `Sv.${P.lvl} ${P.name}`;
+    const need = KK.xpNeed(P.lvl);
+    $('#hbXpFill').style.width = (clamp(P.xp / need, 0, 1) * 100) + '%';
+    $('#hbXp').textContent = `TP ${P.xp}/${need}`;
+    $('#hbGold').textContent = `${P.gold} altın`;
+    $('#ptsDot').hidden = !P.pts;
+    $('#ptsDot').textContent = P.pts;
+    const cv = $('#medalCanvas'), c = cv.getContext('2d');
+    c.setTransform(1, 0, 0, 1, 0, 0);
+    c.fillStyle = '#2a1c17'; c.fillRect(0, 0, 160, 160);
+    const img = KK.spriteImage('oyuncu');
+    if (img) { c.imageSmoothingEnabled = true; c.imageSmoothingQuality = 'high'; c.drawImage(img, 30, 4, 76, 76, 0, 0, 160, 160); }
+  }
+
+  /* ---------- şehir pencereleri ---------- */
+  const WINS = {
+    arena: ['Arena', renderArena],
+    demirci: ['Demirci', renderDemirci],
+    zirhci: ['Zırhçı', renderZirhci],
+    iksirci: ['İksirci', renderIksirci],
+    egitim: ['Eğitim Alanı', renderEgitim],
+    karakter: ['Karakter', renderKarakter],
+  };
+  let winKey = null, smithTab = 'kilic', armorTab = 'zirh';
+  function openWin(key) {
+    winKey = key;
+    $('#win').hidden = false;
+    renderWin();
+    $('#winClose').focus();
+  }
+  function closeWin() { winKey = null; $('#win').hidden = true; }
+  function renderWin() {
+    if (!winKey || !P) return;
+    const [title, fn] = WINS[winKey];
+    $('#winTitle').textContent = title;
+    $('#winGold').textContent = `${P.gold} altın`;
+    const body = $('#winBody'), top = body.scrollTop;
     body.innerHTML = '';
-    ({ arena: renderArena, magaza: renderShop, ekipman: renderEquip, karakter: renderHero, egitim: renderTraining })[tab](body);
+    fn(body);
+    body.scrollTop = top;
+    renderCityHud();
   }
 
   function foeCard(foe, opts) {
     const cv = h('canvas', { class: 'portrait', width: 320, height: 320, 'aria-label': foe.name });
     const st = KK.STYLES[foe.style];
     const d = KK.derive(foe);
+    const w = KK.item(foe.equip.silah);
     const kv = h('div', { class: 'kv' });
     const add = (k, v) => kv.append(h('div', null, h('span', null, k), h('b', null, v)));
     add('Seviye', foe.lvl); add('Can', d.maxHp); add('Zırh', d.armor);
     KK.STATS.forEach((s) => add(s.n, foe.stats[s.k]));
     const gear = ['silah', 'zirh', 'migfer', 'kalkan'].map((k) => KK.item(foe.equip[k])).filter(Boolean).map((i) => i.n);
-    if (foe.bow) gear.push('Yay');
     const info = h('div', { class: 'panel' },
       h('div', { class: 'row between' }, h('span', { class: 'label' }, opts.where || ''), foe.tag ? h('span', { class: 'tag' + (foe.champion ? '' : ' story') }, foe.tag) : null),
       h('h3', { class: 'foe-name' }, foe.name),
-      h('p', { class: 'note' }, `${st.n}: ${st.d}`),
+      h('p', { class: 'note' }, `${st.n}: ${st.d} Silahı: ${KK.WEAPON_TYPES[w.type].n}.`),
       h('p', { class: 'tip' }, `İpucu: ${st.tip}`),
       kv,
       h('p', { class: 'note' }, 'Ekipman: ' + (gear.join(' · ') || 'yok')),
       opts.actions || null);
-    setTimeout(() => drawPortrait(cv, foe, -1, (opts.matchId && KK.SPRITE_DEFS[opts.matchId]) ? opts.matchId : foe.style), 0);
+    const draw = () => drawPortrait(cv, foe, -1, foe.sprite);
+    setTimeout(draw, 0); setTimeout(draw, 400);
     return h('div', { class: 'two' }, cv, info);
   }
 
@@ -218,13 +240,11 @@ window.KK = window.KK || {};
       grid.append(h('div', { class: 'ar ' + cls }, h('b', null, a.n), `${count} maç`));
     });
     body.append(grid);
-
     const arena = KK.ARENAS[pr.arena];
     if (!arena || !arena.open) {
       body.append(h('div', { class: 'panel' },
         h('h3', null, arena ? `${arena.n} yapım aşamasında` : 'Hikâye tamamlandı'),
-        h('p', { class: 'note' }, arena ? `Şampiyon: ${arena.champion}. Bu arena sonraki parçada eklenecek. Şimdilik Eğitim Alanı’nda dövüşebilir, mağazadan alışveriş yapabilirsin.` : ''),
-        h('div', { class: 'row' }, h('button', { class: 'btn ghost', type: 'button', onclick: () => { tab = 'egitim'; renderCity(); } }, 'Eğitim Alanı’na git'))));
+        h('p', { class: 'note' }, arena ? `Şampiyon: ${arena.champion}. Bu arena sonraki parçada eklenecek. Yeni silah ve zırhlar demirci ile zırhçıda açıldı; Eğitim Alanı’nda dövüşebilirsin.` : '')));
       return;
     }
     const list = h('div', { class: 'matches' });
@@ -239,15 +259,12 @@ window.KK = window.KK || {};
         h('span', { class: 'st' }, cls === 'done' ? 'Kazanıldı' : cls === 'now' ? 'Sıradaki' : 'Kilitli')));
     });
     body.append(h('div', { class: 'panel' }, h('div', { class: 'row between' }, h('h3', null, arena.n), h('span', { class: 'note' }, `Maç ${pr.match + 1} / ${arena.matches.length}`)), list));
-
     const foe = KK.foeForMatch(pr.arena, pr.match);
-    const def = arena.matches[pr.match];
     body.append(foeCard(foe, {
       where: `${arena.n} · Maç ${pr.match + 1}`,
-      matchId: def.id,
       actions: h('div', { class: 'row' },
-        h('button', { class: 'btn', type: 'button', onclick: () => startStory() }, 'Dövüşe Çık'),
-        P.pts ? h('span', { class: 'note' }, `Dağıtılmamış ${P.pts} puanın var.`) : null),
+        h('button', { class: 'btn', type: 'button', onclick: () => { closeWin(); startStory(); } }, 'Dövüşe Çık'),
+        P.pts ? h('span', { class: 'note' }, `Dağıtılmamış ${P.pts} puanın var (sol üstteki madalyon).`) : null),
     }));
   }
 
@@ -262,125 +279,129 @@ window.KK = window.KK || {};
     if (it.enPen) parts.push(`Enerji −${it.enPen}`);
     return parts.join(' · ');
   }
-  function equipItem(it) {
-    P.equip[it.kind] = it.id;
-    save(); KK.sfx('clang'); renderCity();
-  }
+  function equipItem(it) { P.equip[it.kind] = it.id; save(); KK.sfx('clang'); renderWin(); }
   function itemRow(it) {
-    const owned = P.owned.includes(it.id);
-    const equipped = P.equip[it.kind] === it.id;
+    const owned = P.owned.includes(it.id), equipped = P.equip[it.kind] === it.id, open = unlocked(it);
     const buy = h('div', { class: 'buy' });
     if (equipped) buy.append(h('span', { class: 'note' }, 'Kuşanıldı'));
     else if (owned) buy.append(h('button', { class: 'btn small', type: 'button', onclick: () => equipItem(it) }, 'Kuşan'));
     else {
       buy.append(h('span', { class: 'price' }, `${it.p} altın`));
       const b = h('button', { class: 'btn small', type: 'button' });
-      if (P.lvl < it.lv) { b.textContent = `Seviye ${it.lv}`; b.disabled = true; }
+      if (!open) { b.textContent = `${arenaName(it.arena)}da açılır`; b.disabled = true; }
       else if (P.gold < it.p) { b.textContent = 'Altın yetmiyor'; b.disabled = true; }
       else {
         b.textContent = 'Satın al';
-        b.onclick = () => { P.gold -= it.p; P.owned.push(it.id); save(); KK.sfx('buy'); renderCity(); };
+        b.onclick = () => { P.gold -= it.p; P.owned.push(it.id); P.equip[it.kind] = it.id; save(); KK.sfx('buy'); renderWin(); };
       }
       buy.append(b);
     }
-    return h('div', { class: 'item' + (equipped ? ' eq' : '') },
-      h('div', { class: 'nm' }, it.n), buy,
-      h('div', { class: 'st' }, `${itemLine(it)} · Sv. ${it.lv}`));
+    return h('div', { class: 'item ico-row' + (equipped ? ' eq' : '') + (open || owned ? '' : ' locked') },
+      icon(it.icon, it.n), h('div', { class: 'nm' }, `${ROMAN[it.tier - 1]}. ${it.n}`), buy,
+      h('div', { class: 'st' }, itemLine(it)));
   }
-  function renderShop(body) {
-    const tabs = h('div', { class: 'tabs subtabs', role: 'tablist' });
-    [['silah', 'Silah'], ['zirh', 'Zırh'], ['migfer', 'Miğfer'], ['kalkan', 'Kalkan'], ['iksir', 'İksir']].forEach(([k, n]) => {
-      tabs.append(h('button', { class: 'tab', type: 'button', role: 'tab', 'aria-selected': String(shopTab === k), onclick: () => { shopTab = k; renderCity(); } }, n));
-    });
+  function tabs(list, cur, onPick) {
+    const t = h('div', { class: 'tabs subtabs', role: 'tablist' });
+    list.forEach(([k, n]) => t.append(h('button', { class: 'tab', type: 'button', role: 'tab', 'aria-selected': String(cur === k), onclick: () => onPick(k) }, n)));
+    return t;
+  }
+  function renderDemirci(body) {
+    body.append(tabs(Object.keys(KK.WEAPON_TYPES).map((k) => [k, KK.WEAPON_TYPES[k].n]), smithTab, (k) => { smithTab = k; renderWin(); }));
+    body.append(h('p', { class: 'tip' }, `${KK.WEAPON_TYPES[smithTab].n}: ${KK.WEAPON_TYPES[smithTab].d} Her arenada her türden 2 yeni silah açılır. Aldığın silah hemen kuşanılır.`));
     const list = h('div', { class: 'items' });
-    if (shopTab === 'silah') {
-      Object.keys(KK.WEAPON_TYPES).filter((t) => t !== 'yay').forEach((t) => {
-        list.append(h('div', { class: 'group' }, KK.WEAPON_TYPES[t].n));
-        KK.WEAPONS.filter((w) => w.type === t).forEach((w) => list.append(itemRow(w)));
-      });
-    } else if (shopTab === 'iksir') {
-      Object.entries(KK.POTIONS).forEach(([k, pot]) => {
-        const b = h('button', { class: 'btn small', type: 'button', disabled: P.gold < pot.p || P.potions[k] >= 5 });
-        b.textContent = P.potions[k] >= 5 ? 'En fazla 5' : P.gold < pot.p ? 'Altın yetmiyor' : 'Satın al';
-        b.onclick = () => { P.gold -= pot.p; P.potions[k]++; save(); KK.sfx('buy'); renderCity(); };
-        list.append(h('div', { class: 'item' },
-          h('div', { class: 'nm' }, `${pot.n} (${P.potions[k]} adet)`),
-          h('div', { class: 'buy' }, h('span', { class: 'price' }, `${pot.p} altın`), b),
-          h('div', { class: 'st' }, `${pot.d} Dövüşte bir tur harcar, dövüş başına en fazla ${KK.MAX_POTIONS_PER_FIGHT}.`)));
-      });
-    } else {
-      Object.keys(KK.SERIES).forEach((s) => {
-        list.append(h('div', { class: 'group' }, `${KK.SERIES[s].n} seri · ${KK.SERIES[s].d}`));
-        KK.ARMOR.filter((a) => a.kind === shopTab && a.series === s).forEach((a) => list.append(itemRow(a)));
-      });
-    }
-    body.append(h('div', { class: 'panel' }, tabs, list));
+    KK.WEAPONS.filter((w) => w.type === smithTab).forEach((w) => list.append(itemRow(w)));
+    body.append(list);
   }
-
-  function renderEquip(body) {
-    const cv = h('canvas', { class: 'portrait', width: 320, height: 320, 'aria-label': 'Gladyatörün' });
-    setTimeout(() => drawPortrait(cv, playerFighter(), 1, 'oyuncu'), 0);
-    const d = KK.derive(playerFighter());
-    const slots = h('div', null);
-    KK.SLOTS.forEach(({ k, n }) => {
-      const cur = KK.item(P.equip[k]);
-      const others = P.owned.map(KK.item).filter((it) => it && it.kind === k && it.id !== P.equip[k]);
-      const row = h('div', { class: 'slot' },
-        h('div', { class: 'row between' }, h('span', { class: 'label' }, n),
-          cur && k !== 'silah' ? h('button', { class: 'btn ghost small', type: 'button', onclick: () => { P.equip[k] = null; save(); renderCity(); } }, 'Çıkar') : null),
-        h('div', null, h('b', null, cur ? cur.n : 'Yok'), cur ? h('div', { class: 'note' }, itemLine(cur)) : null));
-      others.forEach((it) => row.append(h('div', { class: 'row between' },
-        h('span', { class: 'note' }, `${it.n} · ${itemLine(it)}`),
-        h('button', { class: 'btn small', type: 'button', onclick: () => equipItem(it) }, 'Kuşan'))));
-      slots.append(row);
+  function renderZirhci(body) {
+    body.append(tabs([['zirh', 'Zırh'], ['migfer', 'Miğfer'], ['kalkan', 'Kalkan']], armorTab, (k) => { armorTab = k; renderWin(); }));
+    const list = h('div', { class: 'items' });
+    Object.keys(KK.SERIES).forEach((s) => {
+      list.append(h('div', { class: 'group' }, `${KK.SERIES[s].n} seri · ${KK.SERIES[s].d}`));
+      KK.ARMOR.filter((a) => a.kind === armorTab && a.series === s).forEach((a) => list.append(itemRow(a)));
     });
-    const dv = h('div', { class: 'derived' });
-    [['Can', d.maxHp], ['Enerji', d.maxEn], ['Zırh', d.armor], ['Blok', `%${Math.round(d.block * 100)}`], ['Hasar', `${d.wmin}–${d.wmax}`], ['Kritik', `%${Math.round(d.crit * 100)}`]]
-      .forEach(([k, v]) => dv.append(h('div', null, h('b', null, v), h('span', null, k))));
-    body.append(h('div', { class: 'two' }, h('div', { class: 'panel' }, cv, dv), h('div', { class: 'panel' }, h('p', { class: 'note' }, 'Sahip olduğun eşyaları buradan kuşanırsın. Yeni eşyaları Mağaza’dan alırsın.'), slots)));
+    body.append(list);
   }
-
-  function renderHero(body) {
+  function renderIksirci(body) {
+    body.append(h('p', { class: 'tip' }, `İksir içmek dövüşte bir tur harcar. Bir dövüşte en fazla ${KK.MAX_POTIONS_PER_FIGHT} iksir içebilirsin; her iksirden en fazla ${KK.MAX_POTION_STACK} tane taşıyabilirsin.`));
+    const list = h('div', { class: 'items' });
+    KK.POTIONS.forEach((pt) => {
+      const have = P.potions[pt.id] || 0, open = unlocked(pt);
+      const b = h('button', { class: 'btn small', type: 'button' });
+      if (!open) { b.textContent = `${arenaName(pt.arena)}da açılır`; b.disabled = true; }
+      else if (have >= KK.MAX_POTION_STACK) { b.textContent = `En fazla ${KK.MAX_POTION_STACK}`; b.disabled = true; }
+      else if (P.gold < pt.p) { b.textContent = 'Altın yetmiyor'; b.disabled = true; }
+      else { b.textContent = 'Satın al'; b.onclick = () => { P.gold -= pt.p; P.potions[pt.id] = have + 1; save(); KK.sfx('buy'); renderWin(); }; }
+      list.append(h('div', { class: 'item ico-row' + (open ? '' : ' locked') },
+        icon(pt.icon, pt.n), h('div', { class: 'nm' }, `${pt.n} (${have} adet)`),
+        h('div', { class: 'buy' }, h('span', { class: 'price' }, `${pt.p} altın`), b),
+        h('div', { class: 'st' }, pt.d)));
+    });
+    body.append(list);
+  }
+  function renderEgitim(body) {
+    const foe = KK.trainingFoe(P.lvl, Math.min(P.prog.arena, 4), P.trainCount);
+    body.append(h('div', { class: 'panel' },
+      h('p', { class: 'note' }, `İsteğe bağlı dövüşler. Hikâyeyi ilerletmez; ödülleri arena maçlarının %${Math.round(KK.TRAINING_REWARD_MUL * 100)}’i kadardır. Her seferinde farklı bir savaş tarzıyla karşılaşırsın.`),
+      h('div', { class: 'row' }, h('button', { class: 'btn ghost small', type: 'button', onclick: () => { closeWin(); startTutorial(true); } }, 'Eğitim dövüşünü tekrar oyna'))));
+    body.append(foeCard(foe, {
+      where: 'Antrenman dövüşü',
+      actions: h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => { closeWin(); startTraining(foe); } }, 'Antrenmana Başla')),
+    }));
+  }
+  function renderKarakter(body) {
     const cv = h('canvas', { class: 'portrait', width: 320, height: 320, 'aria-label': 'Gladyatörün' });
     setTimeout(() => drawPortrait(cv, playerFighter(), 1, 'oyuncu'), 0);
     const d = KK.derive(playerFighter());
     const stats = h('div', { class: 'stats' });
     statRows(stats, P.stats, {
-      plus: (k) => { if (P.pts <= 0) return; P.stats[k]++; P.pts--; save(); renderCity(); },
+      plus: (k) => { if (P.pts <= 0) return; P.stats[k]++; P.pts--; save(); renderWin(); },
       canPlus: () => P.pts > 0,
       bonus: { agi: d.agiBonus },
     });
     const need = KK.xpNeed(P.lvl);
     const xpBar = h('div', { class: 'bar en' }, h('i', { style: `width:${(P.xp / need) * 100}%;background:var(--good)` }), h('span', null, `${P.xp} / ${need} TP`));
     const dv = h('div', { class: 'derived' });
-    [['Can', d.maxHp], ['Enerji', d.maxEn], ['Dinlenme', `+${d.rest}`], ['Kritik', `%${Math.round(d.crit * 100)}`]]
+    [['Can', d.maxHp], ['Enerji', d.maxEn], ['Zırh', d.armor], ['Blok', `%${Math.round(d.block * 100)}`], ['Hasar', `${d.wmin}–${d.wmax}`], ['Kritik', `%${Math.round(d.crit * 100)}`]]
       .forEach(([k, v]) => dv.append(h('div', null, h('b', null, v), h('span', null, k))));
+    const slots = h('div', { class: 'stats' });
+    KK.SLOTS.forEach(({ k, n }) => {
+      const cur = KK.item(P.equip[k]);
+      const others = P.owned.map(KK.item).filter((it) => it && it.kind === k && it.id !== P.equip[k]);
+      const picks = h('div', { class: 'equip-list' });
+      others.forEach((it) => picks.append(h('button', { class: 'equip-pick', type: 'button', title: itemLine(it), onclick: () => equipItem(it) }, icon(it.icon, it.n), it.n)));
+      if (cur && k !== 'silah') picks.append(h('button', { class: 'btn ghost small', type: 'button', onclick: () => { P.equip[k] = null; save(); renderWin(); } }, 'Çıkar'));
+      slots.append(h('div', { class: 'stat' },
+        h('div', { class: 'slot-row' }, cur ? icon(cur.icon, cur.n) : h('span', { class: 'ico' }),
+          h('div', null, h('div', { class: 'label' }, n), h('b', null, cur ? cur.n : 'Yok'), cur ? h('div', { class: 'note' }, itemLine(cur)) : null)),
+        h('div', { class: 'ds' }, picks)));
+    });
     body.append(h('div', { class: 'two' },
       h('div', { class: 'panel' }, cv,
-        h('div', { class: 'field' }, h('span', { class: 'label' }, `Seviye ${P.lvl}`), xpBar),
-        h('p', { class: 'note' }, `${P.wins} zafer · ${P.losses} yenilgi`),
-        h('button', { class: 'btn ghost small', type: 'button', onclick: goMenu }, 'Ana Menü')),
+        h('div', { class: 'field' }, h('span', { class: 'label' }, `${P.name} · Seviye ${P.lvl}`), xpBar),
+        h('p', { class: 'note' }, `${P.wins} zafer · ${P.losses} yenilgi`), dv),
       h('div', { class: 'panel' },
         h('div', { class: 'row between' }, h('span', { class: 'label' }, 'Özellikler'), h('span', null, h('b', { class: 'pts' }, P.pts), ' ', h('span', { class: 'note' }, 'puan dağıtılabilir'))),
-        stats, dv)));
-  }
-
-  function renderTraining(body) {
-    const foe = KK.trainingFoe(P.lvl, P.trainCount);
-    body.append(h('div', { class: 'panel' },
-      h('h3', null, 'Eğitim Alanı'),
-      h('p', { class: 'note' }, `İsteğe bağlı dövüşler. Hikâyeyi ilerletmez; ödülleri arena maçlarının %${Math.round(KK.TRAINING_REWARD_MUL * 100)}’i kadardır. Her seferinde farklı bir savaş tarzıyla karşılaşırsın.`),
-      h('div', { class: 'row' }, h('button', { class: 'btn ghost small', type: 'button', onclick: () => startTutorial(true) }, 'Eğitim dövüşünü tekrar oyna'))));
-    body.append(foeCard(foe, {
-      where: 'Antrenman dövüşü',
-      actions: h('div', { class: 'row' }, h('button', { class: 'btn', type: 'button', onclick: () => startTraining(foe) }, 'Antrenmana Başla')),
-    }));
+        stats,
+        h('span', { class: 'label' }, 'Ekipman (sahip olduklarından seç)'),
+        slots)));
   }
 
   /* ---------- dövüş ekranı ---------- */
   function setupHud() {
     const m = $('#crowdMeter'); m.innerHTML = '';
     for (let i = 0; i < 10; i++) m.append(document.createElement('i'));
+    $('#potTray').hidden = true;
+  }
+  function renderPotTray() {
+    const tray = $('#potTray'), C = KK.combat();
+    tray.innerHTML = '';
+    if (!C || !C.potions) return;
+    const owned = KK.POTIONS.filter((pt) => (C.potions[pt.id] || 0) > 0);
+    if (!owned.length) { tray.append(h('span', { class: 'note' }, 'Yanında iksir yok. İksirciden alabilirsin.')); return; }
+    owned.forEach((pt) => tray.append(h('button', {
+      class: 'pot-btn', type: 'button', title: pt.d, disabled: !KK.canDo('pot:' + pt.id) || C.busy || C.over,
+      onclick: () => { tray.hidden = true; KK.audio(); KK.playerAct('pot:' + pt.id); },
+    }, icon(pt.icon, pt.n), `${pt.n} ×${C.potions[pt.id]}`)));
   }
   function hud() {
     const C = KK.combat();
@@ -396,24 +417,34 @@ window.KK = window.KK || {};
     w('#eHp', e.hp / e.d.maxHp); $('#eHpT').textContent = `${e.hp}/${e.d.maxHp}`;
     w('#eEn', e.en / e.d.maxEn); $('#eEnT').textContent = `${e.en}`;
     $$('#crowdMeter i').forEach((el, i) => el.classList.toggle('on', i < C.crowd));
+    const b = p.buf, chipsEl = $('#pBuffs'); chipsEl.innerHTML = '';
+    const add = (t) => chipsEl.append(h('span', null, t));
+    if (b.gk > 0) add(`Güç ${b.gk}`); if (b.dd > 0) add(`Demir Deri ${b.dd}`); if (b.ke > 0) add(`Kan Emici ${b.ke}`);
+    if (b.dev > 0) add(`Dev Kanı ${b.dev}`); if (b.ol) add('Ölümsüz'); if (b.vahsi) add('Vahşi Kan'); if (b.zk) add('Zırh Kıran');
+    if (b.shield > 0) add(`Kalkan ${b.shield}`);
     const d = Math.abs(p.slot - e.slot);
-    $('#distT').textContent = d <= 1 ? 'Kılıç mesafesi' : `Mesafe: ${d - 1} adım`;
-    $$('#actions .act').forEach((b) => {
-      const id = b.dataset.act;
-      b.disabled = C.busy || C.over || !KK.canDo(id);
-      b.classList.toggle('hint', !!(C.tut && C.tut.allowed && C.tut.allowed.includes(id)));
-      const info = b.querySelector('[data-info]');
+    $('#distT').textContent = d <= 1 ? 'Bitişik' : `Mesafe: ${d - 1} adım` + (d <= p.d.range ? ' · menzilde' : '');
+    $$('#actions .act').forEach((btn) => {
+      const id = btn.dataset.act;
+      if (id === 'potions') {
+        const anyPot = C.potions && KK.POTIONS.some((pt) => KK.canDo('pot:' + pt.id));
+        btn.disabled = C.busy || C.over || !anyPot;
+        btn.classList.toggle('hint', false);
+        const left = C.potions ? KK.POTIONS.reduce((s, pt) => s + (C.potions[pt.id] || 0), 0) : 0;
+        btn.querySelector('[data-info]').textContent = C.potions ? `${left} adet · ${C.potUsed}/${KK.MAX_POTIONS_PER_FIGHT}` : '';
+        return;
+      }
+      btn.disabled = C.busy || C.over || !KK.canDo(id);
+      btn.classList.toggle('hint', !!(C.tut && C.tut.allowed && C.tut.allowed.includes(id)));
+      const info = btn.querySelector('[data-info]');
       if (!info) return;
       if (KK.ATK[id]) {
         const pv = KK.preview(id);
         info.textContent = `${pv.en} en · %${Math.round(pv.hit * 100)} · ${pv.dmg[0]}–${pv.dmg[1]}`;
       } else if (id === 'taunt') info.textContent = `${KK.TAUNT_EN} en · %${Math.round(KK.tauntChance() * 100)}`;
       else if (id === 'rest') info.textContent = `+${p.d.rest} enerji`;
-      else if (id.startsWith('pot_')) {
-        const k = id.slice(4);
-        info.textContent = C.potions ? `${C.potions[k] || 0} adet · ${C.potUsed}/${KK.MAX_POTIONS_PER_FIGHT}` : '';
-      }
     });
+    if (!$('#potTray').hidden) renderPotTray();
     $('#turnT').textContent = C.over ? 'Dövüş bitti' : C.busy ? `${e.name} hamlesini yapıyor…` : `Tur ${C.turn} · Senin sıran`;
   }
   function logLine(msg) {
@@ -426,17 +457,19 @@ window.KK = window.KK || {};
     $('#tutBox').textContent = text || '';
   }
 
-  function beginFight(foe, kind, onEnd, matchId) {
+  function beginFight(foe, kind, onEnd, bg) {
     $('#log').innerHTML = '';
     tutorial('');
     show('fight');
     setupHud();
     KK.startFight({
-      player: playerFighter(), foe, kind, matchId,
+      player: playerFighter(), foe, kind, bg,
       potions: kind === 'tutorial' ? null : P.potions,
       onEnd, onHud: hud, onLog: logLine, onTutorial: tutorial,
+      onPotionUsed: () => save(),
     });
     logLine(kind === 'tutorial' ? 'Eğitim dövüşü başladı.' : `${foe.name} ile karşı karşıyasın.`);
+    if (foe.intro) logLine(`${foe.name}: “${foe.intro}”`);
     hud();
   }
 
@@ -444,7 +477,7 @@ window.KK = window.KK || {};
     P.xp += xp;
     let ups = 0;
     while (P.xp >= KK.xpNeed(P.lvl)) { P.xp -= KK.xpNeed(P.lvl); P.lvl++; P.pts += KK.POINTS_PER_LEVEL; ups++; }
-    if (ups) lines.push(`<b>Seviye atladın!</b> Artık seviye ${P.lvl}. Karakter ekranında <b>${ups * KK.POINTS_PER_LEVEL} puan</b> dağıt.`);
+    if (ups) lines.push(`<b>Seviye atladın!</b> Artık seviye ${P.lvl}. Sol üstteki madalyondan <b>${ups * KK.POINTS_PER_LEVEL} puan</b> dağıt.`);
   }
   function resultModal(win, title, lines) {
     return new Promise((res) => {
@@ -459,7 +492,7 @@ window.KK = window.KK || {};
 
   /* ---------- oyun akışı ---------- */
   function startTutorial(replay) {
-    beginFight(KK.buildFoe(KK.TUTORIAL_FOE, 0, 'egitim'), 'tutorial', async () => {
+    beginFight(KK.buildFoe(KK.TUTORIAL_FOE, 1, 0, 'egitim'), 'tutorial', async () => {
       const lines = [];
       if (!replay && !P.prog.tutorial) {
         const r = KK.TUTORIAL_REWARD;
@@ -469,7 +502,7 @@ window.KK = window.KK || {};
       } else lines.push('Eğitim tekrarlandı.');
       await resultModal(true, 'Eğitim tamamlandı', lines);
       if (!replay) await KK.playScene('egitim_son', P.name);
-      goCity(replay ? 'egitim' : 'arena');
+      goCity();
     });
   }
 
@@ -492,6 +525,7 @@ window.KK = window.KK || {};
           pr.arena++; pr.match = 0;
           const nx = KK.ARENAS[pr.arena];
           lines.push(`<b>${arena.n}</b> şampiyonunu yendin!`);
+          lines.push('Demirci, zırhçı ve iksircide <b>yeni eşyalar açıldı</b>.');
           if (nx) lines.push(nx.open ? `<b>${nx.n}</b> açıldı.` : `<b>${nx.n}</b> henüz yapım aşamasında.`);
         }
       } else {
@@ -504,8 +538,8 @@ window.KK = window.KK || {};
       save();
       await resultModal(res.win, res.win ? 'Zafer!' : 'Yenildin', lines);
       if (scene) await KK.playScene(scene, P.name);
-      goCity('arena');
-    }, def.id);
+      goCity();
+    }, arena.bg);
   }
 
   function startTraining(foe) {
@@ -520,7 +554,7 @@ window.KK = window.KK || {};
       applyXp(xp, lines);
       save();
       await resultModal(res.win, res.win ? 'Antrenman kazanıldı' : 'Antrenman kaybedildi', lines);
-      goCity('egitim');
+      goCity();
     });
   }
 
@@ -541,32 +575,45 @@ window.KK = window.KK || {};
     KK.audio();
     const s = load(); if (!s) return;
     P = s;
-    if (!P.prog.tutorial) startTutorial(false); else goCity('arena');
+    if (!P.prog.tutorial) startTutorial(false); else goCity();
   };
   $('#backMenuBtn').onclick = goMenu;
   $('#startBtn').onclick = async () => {
     const name = $('#nameIn').value.trim() || 'Adsız';
-    newPlayer(name, Object.assign({}, CR.look), CR.stats, CR.pts);
+    newPlayer(name, CR.stats, CR.pts);
     await KK.playScene('ihanet', P.name);
     startTutorial(false);
   };
-  $$('#cityTabs .tab').forEach((b) => { b.onclick = () => { tab = b.dataset.tab; renderCity(); }; });
-  $$('#actions .act').forEach((b) => { b.onclick = () => { KK.audio(); KK.playerAct(b.dataset.act); }; });
+  $$('#cityScreen [data-go]').forEach((b) => { b.onclick = () => { KK.audio(); KK.sfx('step'); openWin(b.dataset.go); }; });
+  $('#winClose').onclick = closeWin;
+  $('#win').addEventListener('click', (e) => { if (e.target.id === 'win') closeWin(); });
+  $('#cityMenu').onclick = goMenu;
+  $('#citySound').onclick = toggleSound;
+  $$('#actions .act').forEach((b) => {
+    b.onclick = () => {
+      KK.audio();
+      if (b.dataset.act === 'potions') { $('#potTray').hidden = !$('#potTray').hidden; renderPotTray(); return; }
+      $('#potTray').hidden = true;
+      KK.playerAct(b.dataset.act);
+    };
+  });
   $('#soundBtn').onclick = toggleSound;
-  const KEYS = { KeyA: 'back', ArrowLeft: 'back', KeyD: 'fwd', ArrowRight: 'fwd', KeyQ: 'quick', KeyW: 'normal', KeyE: 'power', KeyR: 'taunt', KeyS: 'rest', Digit1: 'pot_can', Digit2: 'pot_enerji' };
+  const KEYS = { KeyA: 'back', ArrowLeft: 'back', KeyD: 'fwd', ArrowRight: 'fwd', KeyQ: 'quick', KeyW: 'normal', KeyE: 'power', KeyR: 'taunt', KeyS: 'rest' };
   document.addEventListener('keydown', (ev) => {
     if (ev.code === 'Escape' && !$('#dialog').hidden) { $('#dialog').hidden = true; return; }
+    if (ev.code === 'Escape' && !$('#win').hidden) { closeWin(); return; }
     if (screen !== 'fight' || !$('#modal').hidden || KK.sceneActive()) return;
     if (ev.target && ev.target.tagName === 'INPUT') return;
+    if (ev.code === 'Digit1') { ev.preventDefault(); $('#potTray').hidden = !$('#potTray').hidden; renderPotTray(); return; }
     const id = KEYS[ev.code];
-    if (id) { ev.preventDefault(); KK.audio(); KK.playerAct(id); }
+    if (id) { ev.preventDefault(); KK.audio(); $('#potTray').hidden = true; KK.playerAct(id); }
   });
 
   /* ---------- başlangıç ---------- */
   try { if (localStorage.getItem('kilic-ve-kalkan-ses') === '0') toggleSound(); } catch (e) { /* yok */ }
-  KK.onSpriteLoad = () => {
+  KK.onSpriteLoad = (key) => {
     if (screen === 'create') renderCreate();
-    if (screen === 'city') renderCity();
+    if (screen === 'city' && key === 'oyuncu') renderCityHud();
   };
   KK.loadSprites();
   KK.startRender();

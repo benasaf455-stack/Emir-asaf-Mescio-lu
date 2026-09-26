@@ -23,3 +23,4 @@
 6. **Askıdaki 17 yıl:** Sözleşme askıya alınınca ele geçirilmiş bedenler çöktü; saray bunu salgın diye örtbas etti. Ritüelciler dağılıp saklandı, Cassian sözleşmeyi yenileyince geri döndüler (oyunda düşman olabilirler). Gerçeği yalnızca birkaç yaşlı danışman biliyordu ve güçlerini kaybetmemek için sustular.
 7. **Öğretmen:** Demircinin kızı Ruh Hançeri'ni ana karaktere getirir. Hançer tutulduğunda Draven'ın anılarını gösterir. Ana karakter ruhları böyle öğrenir, oyuncu da geçmişi böyle görür.
 8. **Anne:** Bilerek açık bırakıldı. Sona ya da devam oyununa saklanan bir sır.
+9. **Ayarlanmış maçlar:** Oyuncuyu öldürmek için ayarlanan maçları Cassian değil, Valerius döneminin gerçeğini bilen yaşlı danışmanlar Cassian'dan habersiz düzenler. Draven'ın oğlu ortaya çıkarsa 17 yıldır sakladıkları sırrın da açığa çıkacağından korkarlar. Böylece oyuncu hem Cassian'ın hem de danışmanların hedefidir. İleride danışmanlardan biri pişman olup ipucu veren bir karakter olabilir.

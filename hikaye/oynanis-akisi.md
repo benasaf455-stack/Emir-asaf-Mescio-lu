@@ -16,7 +16,7 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 ## Karakter
 
 - Oyuncu erkek gladyatöre isim verir.
-- Görünüş seçenekleri: ten, saç, sakal, yara izi.
+- Görünüş seçeneği yok: ana karakterin görseli sabittir (`assets/sprites/oyuncu/idle.png`). Karakter oluşturma ekranında oyuncu yalnızca adını yazar ve puanlarını dağıtır; görsel yanında büyükçe durur.
 - Özellikler:
 
 | Özellik | Etkisi |

@@ -49,13 +49,16 @@ Oyunun asıl işi arena dövüşü, karakter gelişimi ve ekipman almaktır. Hik
 
 ## Mağaza
 
-- **Silahlar:** Oyuncu yakın dövüş silahı kullanır, yay kullanmaz; okçuya karşı taktik yaklaşmaktır.
+- **Silahlar:** Altı tür var, her türden 10 görsel geldi (`assets/gelen/silahlar/`). Her tür farklı oynar:
 
 | Tür | Tarz |
 | --- | --- |
 | Kılıç | Dengeli |
-| Hançer | Hızlı ve isabetli, düşük hasar |
-| Tokmak / balta | Yavaş ve ağır, düşük isabet |
+| Hançer | Hızlı ve isabetli |
+| Tokmak | Ağır vurur, sersemletme şansı var |
+| Balta | Ağır vurur, kalkanı delme şansı var |
+| Mızrak | 2 adım uzaktan vurabilir |
+| Yay | Oyuncu da kullanabilir; uzaktan vurur ama yakında zayıftır |
 
 - **Üç ekipman serisi** (zırh, miğfer, kalkan), her biri kademe kademe gelişir:
 

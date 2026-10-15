@@ -43,9 +43,11 @@ Her yorum için:
 
 ## AI seslendirme (ElevenLabs)
 
-Her yorum, kartı ekrana geldiği anda
-AI sesiyle okunur. Okuma sırasında videonun kendi sesi kısılır, kart da okuma bitene
-kadar ekranda kalır.
+Her yorum, kartı ekrana geldiği anda AI sesiyle okunur. Varsayılan olarak video o anda
+**donar**, okuma bitince kaldığı yerden devam eder (video bu kadar uzar).
+
+- Donmayı kapatmak için: `"video_dursun": false`. Bu durumda video akmaya devam eder,
+  okuma sırasında videonun kendi sesi kısılır.
 
 - Ses seçmek için: `proje.json` içine `"ses_id": "..."` yaz (ElevenLabs'teki Voice ID).
   Tek bir yoruma farklı ses vermek için o yoruma `"ses_id"` ekle.

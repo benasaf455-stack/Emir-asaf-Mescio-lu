@@ -45,6 +45,7 @@ VARSAYILAN_SURE = 2.0
 ELEVENLABS_ANAHTAR = os.environ.get("ELEVENLABS_API_KEY", "").strip()
 VARSAYILAN_SES_ID = os.environ.get("ELEVENLABS_VOICE_ID", "pNInz6obpgDQGcFmaJgB")
 ORJINAL_SES_KISIK = 0.25  # yorum okunurken videonun kendi sesi bu seviyeye iner
+DURAKLAMA_PAYI = 0.4  # okuma bittikten sonra video devam etmeden önceki kısa bekleme
 
 
 def font(ad, boyut):
@@ -271,6 +272,50 @@ def zamanlari_doldur(yorumlar, sure):
         y["bitis"] = min(sure, y["baslangic"] + y["sure"])
 
 
+def duraklat(video, noktalar, sure, hedef):
+    """Videoyu verilen anlarda dondurur. noktalar: [(saniye, bekleme_suresi), ...]
+
+    Donma süresince görüntü o anki karede sabit kalır ve ses susar.
+    """
+    n = len(noktalar)
+    ses = ses_var_mi(video)
+    filtre = [f"[0:v]fps=30,setsar=1,split={2 * n + 1}" + "".join(f"[v{i}]" for i in range(2 * n + 1))]
+    if ses:
+        filtre.append(
+            "[0:a]aformat=sample_rates=44100:channel_layouts=stereo,"
+            f"asplit={n + 1}" + "".join(f"[a{i}]" for i in range(n + 1))
+        )
+    parcalar = []
+    onceki = 0.0
+    kare = 1 / 30
+    for i, (t, bekle) in enumerate(noktalar):
+        filtre.append(f"[v{2 * i}]trim={onceki}:{t},setpts=PTS-STARTPTS[pv{i}]")
+        filtre.append(
+            f"[v{2 * i + 1}]trim={t}:{t + kare},setpts=PTS-STARTPTS,"
+            f"tpad=stop_mode=clone:stop_duration={bekle}[dv{i}]"
+        )
+        if ses:
+            filtre.append(f"[a{i}]atrim={onceki}:{t},asetpts=PTS-STARTPTS[pa{i}]")
+        else:
+            filtre.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{t - onceki}[pa{i}]")
+        filtre.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{bekle + kare}[da{i}]")
+        parcalar += [f"[pv{i}][pa{i}]", f"[dv{i}][da{i}]"]
+        onceki = t
+    filtre.append(f"[v{2 * n}]trim=start={onceki},setpts=PTS-STARTPTS[pvson]")
+    if ses:
+        filtre.append(f"[a{n}]atrim=start={onceki},asetpts=PTS-STARTPTS[pason]")
+    else:
+        filtre.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{sure - onceki}[pason]")
+    parcalar.append("[pvson][pason]")
+    filtre.append(f"{''.join(parcalar)}concat=n={len(parcalar)}:v=1:a=1[v][a]")
+    subprocess.run(
+        ["ffmpeg", "-y", "-v", "error", "-i", video, "-filter_complex", ";".join(filtre),
+         "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "12",
+         "-pix_fmt", "yuv420p", "-c:a", "pcm_s16le", "-f", "mov", hedef],
+        check=True,
+    )
+
+
 def seslendir(metin, ses_id, hedef):
     """Metni ElevenLabs ile MP3'e çevirir."""
     istek = urllib.request.Request(
@@ -306,13 +351,31 @@ def montajla(proje_yolu):
     gecici = tempfile.mkdtemp(prefix="montaj_")
 
     seslendirme = proje.get("seslendirme", True)
+    durdur = proje.get("video_dursun", True)
     ses_id = proje.get("ses_id", VARSAYILAN_SES_ID)
     if seslendirme:
         for i, y in enumerate(yorumlar):
             y["ses_dosyasi"] = os.path.join(gecici, f"ses{i}.mp3")
-            ses_suresi = seslendir(y["yorum"], y.get("ses_id", ses_id), y["ses_dosyasi"])
-            # kart en az okuma bitene kadar ekranda kalsın
-            y["bitis"] = min(sure, max(y["bitis"], y["baslangic"] + ses_suresi + 0.3))
+            y["ses_suresi"] = seslendir(y["yorum"], y.get("ses_id", ses_id), y["ses_dosyasi"])
+            if not durdur:
+                # kart en az okuma bitene kadar ekranda kalsın
+                y["bitis"] = min(sure, max(y["bitis"], y["baslangic"] + y["ses_suresi"] + 0.3))
+
+    if durdur and yorumlar:
+        # Yorum ekrana gelince video donar, okuma (ya da kartın süresi) bitince devam eder.
+        yorumlar.sort(key=lambda y: y["baslangic"])
+        kayma = 0.0
+        noktalar = []
+        for y in yorumlar:
+            t = min(max(0.0, y["baslangic"]), max(0.0, sure - 0.05))
+            bekle = y["ses_suresi"] + DURAKLAMA_PAYI if "ses_suresi" in y else y["sure"]
+            noktalar.append((t, bekle))
+            y["baslangic"] = round(t + kayma, 3)
+            y["bitis"] = round(y["baslangic"] + bekle, 3)
+            kayma += bekle
+        duraklatilmis = os.path.join(gecici, "duraklatilmis.mp4")
+        duraklat(video, noktalar, sure, duraklatilmis)
+        video, sure = duraklatilmis, sure + kayma
     cerceve_yolu = os.path.join(gecici, "cerceve.png")
     cerceve().convert("RGB").save(cerceve_yolu)
 
@@ -341,7 +404,9 @@ def montajla(proje_yolu):
     ses_cikisi = None
     orjinal_ses = ses_var_mi(video)
     if seslendirme and yorumlar:
-        if orjinal_ses:
+        if orjinal_ses and durdur:
+            filtre.append("[1:a]anull[orj]")  # donma anlarında video zaten sessiz
+        elif orjinal_ses:
             araliklar = "+".join(f"between(t,{y['baslangic']},{y['bitis']})" for y in yorumlar)
             filtre.append(f"[1:a]volume={ORJINAL_SES_KISIK}:enable='{araliklar}'[orj]")
         else:

@@ -39,7 +39,9 @@ MAVI_TIK = (0, 149, 246)
 
 VARSAYILAN_SURE = 2.0
 
-# AI seslendirme (ElevenLabs). Anahtar yoksa video sessiz yorumlarla üretilir.
+# AI seslendirme (ElevenLabs). Anahtar ELEVENLABS_API_KEY ortam değişkeninden okunur;
+# Claude bulut ortamında ise anahtarı ağ katmanı (gizli anahtar) kendisi ekler, o yüzden
+# değişken boş olsa da istek gönderilir.
 ELEVENLABS_ANAHTAR = os.environ.get("ELEVENLABS_API_KEY", "").strip()
 VARSAYILAN_SES_ID = os.environ.get("ELEVENLABS_VOICE_ID", "pNInz6obpgDQGcFmaJgB")
 ORJINAL_SES_KISIK = 0.25  # yorum okunurken videonun kendi sesi bu seviyeye iner
@@ -274,8 +276,8 @@ def seslendir(metin, ses_id, hedef):
     istek = urllib.request.Request(
         f"https://api.elevenlabs.io/v1/text-to-speech/{ses_id}?output_format=mp3_44100_128",
         data=json.dumps({"text": metin, "model_id": "eleven_multilingual_v2"}).encode("utf-8"),
-        headers={"xi-api-key": ELEVENLABS_ANAHTAR, "Content-Type": "application/json",
-                 "Accept": "audio/mpeg"},
+        headers={"Content-Type": "application/json", "Accept": "audio/mpeg",
+                 **({"xi-api-key": ELEVENLABS_ANAHTAR} if ELEVENLABS_ANAHTAR else {})},
     )
     try:
         with urllib.request.urlopen(istek, timeout=60) as yanit, open(hedef, "wb") as f:
@@ -303,9 +305,7 @@ def montajla(proje_yolu):
     cizici = MetinCizici()
     gecici = tempfile.mkdtemp(prefix="montaj_")
 
-    seslendirme = proje.get("seslendirme", True) and bool(ELEVENLABS_ANAHTAR)
-    if proje.get("seslendirme", True) and not ELEVENLABS_ANAHTAR:
-        print("Uyarı: ELEVENLABS_API_KEY yok, seslendirme atlanıyor.")
+    seslendirme = proje.get("seslendirme", True)
     ses_id = proje.get("ses_id", VARSAYILAN_SES_ID)
     if seslendirme:
         for i, y in enumerate(yorumlar):

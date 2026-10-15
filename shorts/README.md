@@ -43,13 +43,14 @@ Her yorum için:
 
 ## AI seslendirme (ElevenLabs)
 
-`ELEVENLABS_API_KEY` ortam değişkeni tanımlıysa her yorum, kartı ekrana geldiği anda
+Her yorum, kartı ekrana geldiği anda
 AI sesiyle okunur. Okuma sırasında videonun kendi sesi kısılır, kart da okuma bitene
 kadar ekranda kalır.
 
 - Ses seçmek için: `proje.json` içine `"ses_id": "..."` yaz (ElevenLabs'teki Voice ID).
   Tek bir yoruma farklı ses vermek için o yoruma `"ses_id"` ekle.
 - Seslendirmeyi kapatmak için: `"seslendirme": false`
+- Anahtar: `ELEVENLABS_API_KEY` ortam değişkeni (Claude bulut ortamında gizli anahtar olarak tanımlıysa gerekmez).
 
 ## Dosyalar
 

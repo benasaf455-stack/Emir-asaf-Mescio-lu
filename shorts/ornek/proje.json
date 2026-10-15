@@ -1,0 +1,27 @@
+{
+  "video": "video.mp4",
+  "cikti": "cikti.mp4",
+  "yorumlar": [
+    {
+      "kullanici": "yaskonline34",
+      "yorum": "Darbe planı",
+      "begeni": "186",
+      "baslangic": 0,
+      "sure": 1
+    },
+    {
+      "kullanici": "isomaka",
+      "onayli": true,
+      "yorum": "tam üstüne bastın abicim",
+      "begeni": "2.627",
+      "baslangic": 7.4,
+      "sure": 1.5
+    },
+    {
+      "kullanici": "emretuncarr",
+      "yorum": "notlar alındı çıkarımlar yapıldı 💪",
+      "begeni": "579",
+      "avatar": "avatar_emre.jpg"
+    }
+  ]
+}

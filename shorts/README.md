@@ -41,6 +41,16 @@ Her yorum için:
 | `baslangic` | hayır | Kartın çıkacağı saniye. Verilmezse yorumlar videoya eşit dağıtılır |
 | `sure` | hayır | Kartın ekranda kalacağı süre (varsayılan 2 sn) |
 
+## AI seslendirme (ElevenLabs)
+
+`ELEVENLABS_API_KEY` ortam değişkeni tanımlıysa her yorum, kartı ekrana geldiği anda
+AI sesiyle okunur. Okuma sırasında videonun kendi sesi kısılır, kart da okuma bitene
+kadar ekranda kalır.
+
+- Ses seçmek için: `proje.json` içine `"ses_id": "..."` yaz (ElevenLabs'teki Voice ID).
+  Tek bir yoruma farklı ses vermek için o yoruma `"ses_id"` ekle.
+- Seslendirmeyi kapatmak için: `"seslendirme": false`
+
 ## Dosyalar
 
 - `montaj.py`: montaj aracı

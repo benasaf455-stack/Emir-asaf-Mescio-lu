@@ -15,6 +15,8 @@ import os
 import subprocess
 import sys
 import tempfile
+import urllib.error
+import urllib.request
 
 from PIL import Image, ImageDraw, ImageFont
 
@@ -36,6 +38,11 @@ BEYAZ = (245, 245, 245)
 MAVI_TIK = (0, 149, 246)
 
 VARSAYILAN_SURE = 2.0
+
+# AI seslendirme (ElevenLabs). Anahtar yoksa video sessiz yorumlarla üretilir.
+ELEVENLABS_ANAHTAR = os.environ.get("ELEVENLABS_API_KEY", "").strip()
+VARSAYILAN_SES_ID = os.environ.get("ELEVENLABS_VOICE_ID", "pNInz6obpgDQGcFmaJgB")
+ORJINAL_SES_KISIK = 0.25  # yorum okunurken videonun kendi sesi bu seviyeye iner
 
 
 def font(ad, boyut):
@@ -262,6 +269,22 @@ def zamanlari_doldur(yorumlar, sure):
         y["bitis"] = min(sure, y["baslangic"] + y["sure"])
 
 
+def seslendir(metin, ses_id, hedef):
+    """Metni ElevenLabs ile MP3'e çevirir."""
+    istek = urllib.request.Request(
+        f"https://api.elevenlabs.io/v1/text-to-speech/{ses_id}?output_format=mp3_44100_128",
+        data=json.dumps({"text": metin, "model_id": "eleven_multilingual_v2"}).encode("utf-8"),
+        headers={"xi-api-key": ELEVENLABS_ANAHTAR, "Content-Type": "application/json",
+                 "Accept": "audio/mpeg"},
+    )
+    try:
+        with urllib.request.urlopen(istek, timeout=60) as yanit, open(hedef, "wb") as f:
+            f.write(yanit.read())
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"Seslendirme hatası ({e.code}): {e.read().decode('utf-8', 'ignore')}")
+    return sure_al(hedef)
+
+
 def montajla(proje_yolu):
     with open(proje_yolu, encoding="utf-8") as f:
         proje = json.load(f)
@@ -279,6 +302,17 @@ def montajla(proje_yolu):
 
     cizici = MetinCizici()
     gecici = tempfile.mkdtemp(prefix="montaj_")
+
+    seslendirme = proje.get("seslendirme", True) and bool(ELEVENLABS_ANAHTAR)
+    if proje.get("seslendirme", True) and not ELEVENLABS_ANAHTAR:
+        print("Uyarı: ELEVENLABS_API_KEY yok, seslendirme atlanıyor.")
+    ses_id = proje.get("ses_id", VARSAYILAN_SES_ID)
+    if seslendirme:
+        for i, y in enumerate(yorumlar):
+            y["ses_dosyasi"] = os.path.join(gecici, f"ses{i}.mp3")
+            ses_suresi = seslendir(y["yorum"], y.get("ses_id", ses_id), y["ses_dosyasi"])
+            # kart en az okuma bitene kadar ekranda kalsın
+            y["bitis"] = min(sure, max(y["bitis"], y["baslangic"] + ses_suresi + 0.3))
     cerceve_yolu = os.path.join(gecici, "cerceve.png")
     cerceve().convert("RGB").save(cerceve_yolu)
 
@@ -304,10 +338,32 @@ def montajla(proje_yolu):
         son = f"s{i + 1}"
         print(f"  yorum {i + 1}: {y['kullanici']}  {y['baslangic']:.1f}s - {y['bitis']:.1f}s")
 
+    ses_cikisi = None
+    orjinal_ses = ses_var_mi(video)
+    if seslendirme and yorumlar:
+        if orjinal_ses:
+            araliklar = "+".join(f"between(t,{y['baslangic']},{y['bitis']})" for y in yorumlar)
+            filtre.append(f"[1:a]volume={ORJINAL_SES_KISIK}:enable='{araliklar}'[orj]")
+        else:
+            filtre.append(f"anullsrc=r=44100:cl=stereo,atrim=0:{sure}[orj]")
+        karisim = ["[orj]"]
+        for i, y in enumerate(yorumlar):
+            sira = len(yorumlar) + 2 + i
+            girdiler += ["-i", y["ses_dosyasi"]]
+            ms = round(y["baslangic"] * 1000)
+            filtre.append(f"[{sira}:a]aformat=channel_layouts=stereo,adelay={ms}|{ms}[ses{i}]")
+            karisim.append(f"[ses{i}]")
+        filtre.append(
+            f"{''.join(karisim)}amix=inputs={len(karisim)}:normalize=0:duration=first[aout]"
+        )
+        ses_cikisi = "[aout]"
+    elif orjinal_ses:
+        ses_cikisi = "1:a"
+
     komut = ["ffmpeg", "-y", "-v", "error", "-stats", *girdiler,
              "-filter_complex", ";".join(filtre), "-map", f"[{son}]"]
-    if ses_var_mi(video):
-        komut += ["-map", "1:a", "-c:a", "aac", "-b:a", "192k"]
+    if ses_cikisi:
+        komut += ["-map", ses_cikisi, "-c:a", "aac", "-b:a", "192k"]
     komut += ["-c:v", "libx264", "-preset", "medium", "-crf", "18", "-pix_fmt", "yuv420p",
               "-r", "30", "-t", f"{sure}", "-movflags", "+faststart", cikti]
     subprocess.run(komut, check=True)

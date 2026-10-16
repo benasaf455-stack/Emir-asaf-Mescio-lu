@@ -42,7 +42,17 @@ Her yorum için:
 | `sure` | hayır | Kartın ekranda kalacağı süre (varsayılan 2 sn) |
 | `ses` | hayır | Hazır ses dosyası (ör. CapCut'ta üretilmiş `1.mp3`). Verilirse ElevenLabs kullanılmaz |
 
-## AI seslendirme (ElevenLabs)
+## AI seslendirme
+
+İki ses motoru var, `proje.json` içinde `"ses_motoru"` ile seçilir:
+
+- `"chatterbox"` (varsayılan): Ücretsiz, açık kaynak. `assets/ses_ornegi.mp3` içindeki
+  sesi (CapCut "Kalın erkek sesi") taklit eder. Başka bir örnek için `"ses_ornegi": "dosya.mp3"`.
+  Kurulum ve gerekli ağ izinleri için `ses_chatterbox.py` dosyasının başına bakın
+  (`huggingface.co`, `*.hf.co`, `download.pytorch.org`).
+- `"elevenlabs"`: ElevenLabs API (aşağıya bakın).
+
+### ElevenLabs
 
 Her yorum, kartı ekrana geldiği anda AI sesiyle okunur. Varsayılan olarak video o anda
 **donar**, okuma bitince kaldığı yerden devam eder (video bu kadar uzar).

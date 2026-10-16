@@ -353,11 +353,21 @@ def montajla(proje_yolu):
     seslendirme = proje.get("seslendirme", True)
     durdur = proje.get("video_dursun", True)
     ses_id = proje.get("ses_id", VARSAYILAN_SES_ID)
+    # "chatterbox": ücretsiz klon ses (ses_chatterbox.py), "elevenlabs": ElevenLabs API
+    motor = proje.get("ses_motoru", "chatterbox")
+    ornek = yol(proje["ses_ornegi"]) if proje.get("ses_ornegi") else None
     if seslendirme:
         for i, y in enumerate(yorumlar):
             if y.get("ses"):
                 # hazır ses dosyası (ör. CapCut'ta üretilmiş) verildiyse onu kullan
                 y["ses_dosyasi"] = yol(y["ses"])
+                y["ses_suresi"] = sure_al(y["ses_dosyasi"])
+            elif motor == "chatterbox":
+                import ses_chatterbox
+
+                y["ses_dosyasi"] = os.path.join(gecici, f"ses{i}.wav")
+                print(f"  seslendiriliyor: {y['yorum']}")
+                ses_chatterbox.seslendir(y["yorum"], y["ses_dosyasi"], ornek)
                 y["ses_suresi"] = sure_al(y["ses_dosyasi"])
             else:
                 y["ses_dosyasi"] = os.path.join(gecici, f"ses{i}.mp3")

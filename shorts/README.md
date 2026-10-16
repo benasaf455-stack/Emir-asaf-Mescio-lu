@@ -40,6 +40,7 @@ Her yorum için:
 | `avatar` | hayır | Profil resmi dosyası; yoksa gri boş profil resmi kullanılır |
 | `baslangic` | hayır | Kartın çıkacağı saniye. Verilmezse yorumlar videoya eşit dağıtılır |
 | `sure` | hayır | Kartın ekranda kalacağı süre (varsayılan 2 sn) |
+| `ses` | hayır | Hazır ses dosyası (ör. CapCut'ta üretilmiş `1.mp3`). Verilirse ElevenLabs kullanılmaz |
 
 ## AI seslendirme (ElevenLabs)
 

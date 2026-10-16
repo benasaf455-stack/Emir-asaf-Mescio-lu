@@ -355,8 +355,13 @@ def montajla(proje_yolu):
     ses_id = proje.get("ses_id", VARSAYILAN_SES_ID)
     if seslendirme:
         for i, y in enumerate(yorumlar):
-            y["ses_dosyasi"] = os.path.join(gecici, f"ses{i}.mp3")
-            y["ses_suresi"] = seslendir(y["yorum"], y.get("ses_id", ses_id), y["ses_dosyasi"])
+            if y.get("ses"):
+                # hazır ses dosyası (ör. CapCut'ta üretilmiş) verildiyse onu kullan
+                y["ses_dosyasi"] = yol(y["ses"])
+                y["ses_suresi"] = sure_al(y["ses_dosyasi"])
+            else:
+                y["ses_dosyasi"] = os.path.join(gecici, f"ses{i}.mp3")
+                y["ses_suresi"] = seslendir(y["yorum"], y.get("ses_id", ses_id), y["ses_dosyasi"])
             if not durdur:
                 # kart en az okuma bitene kadar ekranda kalsın
                 y["bitis"] = min(sure, max(y["bitis"], y["baslangic"] + y["ses_suresi"] + 0.3))
